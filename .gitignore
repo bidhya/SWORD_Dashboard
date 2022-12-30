@@ -131,3 +131,4 @@ dmypy.json
 #Put you custom files that you want ignore from tracking
 # Ignore the data folder because the file can be more a GB in size
 #data/
+.DS_Store
