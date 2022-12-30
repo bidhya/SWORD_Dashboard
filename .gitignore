@@ -132,3 +132,4 @@ dmypy.json
 # Ignore the data folder because the file can be more a GB in size
 #data/
 .DS_Store
+.flake8

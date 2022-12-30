@@ -6,6 +6,7 @@ Forked repo
 copy paste "data" folder to this repo  
 edit .gitignore to remove "/data" and add ".DS_Store"  
 Create a .gitignore inside the "data" folder to ignore nc files and html files. This keep an almost empty data folder  
-
+Add .flake8 to ignore some python PEP warnings on vscode  
+ 
 
 
