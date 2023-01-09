@@ -18,7 +18,6 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-import plotly.express as px
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 load_figure_template("cerulean")
@@ -54,20 +53,10 @@ def get_data(fn):
 
     return nodes_all
 
-# Dummy csv file for plotting
-df = pd.read_csv('https://gist.githubusercontent.com/chriddyp/5d1ea79569ed194d432e56108a04d188/raw/a9f9e8076b837d541398e999dcbac2b2826a81f8/gdp-life-exp-2007.csv')
-
-
-def plot_timeseries(df, reach=None):
-    """ New function to plot the reach-level SWOT timeseries data """
-    fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)
-    return fig
-
 #################################################################################################
 ### Function for plotting node level data.
 
 def plot_nodes(df, reach=None):
-    """ TODO Main function for plotting all 6 figures """
     if reach is None:
         rch = 81247100041 #default reach
     else:
@@ -1064,8 +1053,7 @@ app.layout = html.Div([
             button_report,
             report_overlay,
             dcc.Graph(
-                # figure=plot_nodes(node_df_cp),
-                figure=plot_timeseries(df),
+                figure=plot_nodes(node_df_cp),
                 id='ReachGraph')
         ]), #end subdiv3
         html.Br(),
@@ -1362,8 +1350,7 @@ def update_output_div(input_value):
 )
 def update_graph(term, n_clicks):
     if term or n_clicks:
-        # fig = plot_nodes(node_df_cp, term)  # BY: plot all six figures
-        fig = plot_timeseries(df)
+        fig = plot_nodes(node_df_cp, term)
         n_clicks = None
         return fig, n_clicks
 
@@ -1604,5 +1591,5 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
     return children
 
 if __name__ == '__main__':
-    # app.run_server()
-    app.run_server(debug=True) #use this line instead of the line before to run the app in debug mode.
+    app.run_server()
+    # app.run_server(debug=True) #use this line instead of the line before to run the app in debug mode.
