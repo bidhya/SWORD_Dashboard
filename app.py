@@ -65,7 +65,7 @@ def plot_nodes(df, reach=None):
     node_reaches = df.loc[df['reach_id'] == rch]
 
     #add base plots
-    fig = make_subplots(rows=3, cols=2)
+    fig = make_subplots(rows=1, cols=2)
     fig.add_trace(
         go.Scatter(
             x=node_reaches['dist_out']/1000,
@@ -80,34 +80,34 @@ def plot_nodes(df, reach=None):
             mode='lines+markers'),
         row=1, col=2
     )
-    fig.add_trace(
-        go.Scatter(
-            x=node_reaches['dist_out']/1000,
-            y=node_reaches['node_order'],
-            mode='lines+markers'),
-        row=2, col=1
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=node_reaches['dist_out']/1000,
-            y=node_reaches['facc'],
-            mode='lines+markers'),
-        row=2, col=2
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=node_reaches['dist_out']/1000,
-            y=node_reaches['n_chan_mod'],
-            mode='lines+markers'),
-        row=3, col=1
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=node_reaches['dist_out']/1000,
-            y=node_reaches['sinuosity'],
-            mode='lines+markers'),
-        row=3, col=2
-    )
+    # fig.add_trace(
+    #     go.Scatter(
+    #         x=node_reaches['dist_out']/1000,
+    #         y=node_reaches['node_order'],
+    #         mode='lines+markers'),
+    #     row=2, col=1
+    # )
+    # fig.add_trace(
+    #     go.Scatter(
+    #         x=node_reaches['dist_out']/1000,
+    #         y=node_reaches['facc'],
+    #         mode='lines+markers'),
+    #     row=2, col=2
+    # )
+    # fig.add_trace(
+    #     go.Scatter(
+    #         x=node_reaches['dist_out']/1000,
+    #         y=node_reaches['n_chan_mod'],
+    #         mode='lines+markers'),
+    #     row=3, col=1
+    # )
+    # fig.add_trace(
+    #     go.Scatter(
+    #         x=node_reaches['dist_out']/1000,
+    #         y=node_reaches['sinuosity'],
+    #         mode='lines+markers'),
+    #     row=3, col=2
+    # )
     # Update xaxis properties
     fig.update_xaxes(
         title_text="Distance from Outlet (km)",
@@ -115,18 +115,18 @@ def plot_nodes(df, reach=None):
     fig.update_xaxes(
         title_text="Distance from Outlet (km)",
         row=1, col=2)
-    fig.update_xaxes(
-        title_text="Distance from Outlet (km)",
-        row=2, col=1)
-    fig.update_xaxes(
-        title_text="Distance from Outlet (km)",
-        row=2, col=2)
-    fig.update_xaxes(
-        title_text="Distance from Outlet (km)",
-        row=3, col=1)
-    fig.update_xaxes(
-        title_text="Distance from Outlet (km)",
-        row=3, col=2)
+    # fig.update_xaxes(
+    #     title_text="Distance from Outlet (km)",
+    #     row=2, col=1)
+    # fig.update_xaxes(
+    #     title_text="Distance from Outlet (km)",
+    #     row=2, col=2)
+    # fig.update_xaxes(
+    #     title_text="Distance from Outlet (km)",
+    #     row=3, col=1)
+    # fig.update_xaxes(
+    #     title_text="Distance from Outlet (km)",
+    #     row=3, col=2)
     # Update yaxis properties
     fig.update_yaxes(
         title_text="Water Surface Elevation (m)",
@@ -134,21 +134,21 @@ def plot_nodes(df, reach=None):
     fig.update_yaxes(
         title_text="Width (m)",
         row=1, col=2)
-    fig.update_yaxes(
-        title_text="Node Order",
-        row=2, col=1)
-    fig.update_yaxes(
-        title_text="Flow Accumulation (sq.km)",
-        row=2, col=2)
-    fig.update_yaxes(
-        title_text="Number of Channels",
-        row=3, col=1)
-    fig.update_yaxes(
-        title_text="Sinuosity",
-        row=3, col=2)
+    # fig.update_yaxes(
+    #     title_text="Node Order",
+    #     row=2, col=1)
+    # fig.update_yaxes(
+    #     title_text="Flow Accumulation (sq.km)",
+    #     row=2, col=2)
+    # fig.update_yaxes(
+    #     title_text="Number of Channels",
+    #     row=3, col=1)
+    # fig.update_yaxes(
+    #     title_text="Sinuosity",
+    #     row=3, col=2)
     #overall figure properties
     fig.update_layout(
-        height=1000, #width=1400,
+        height=400, #width=1400,
         title_text="Reach "+str(rch)+": Node Level Attributes",
         title_x=0.5,
         showlegend=False,
@@ -238,7 +238,7 @@ node_df = get_data("data/")
 node_df_cp = node_df.copy()
 
 # Trigger app.
-app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN],suppress_callback_exceptions=True, title="SWOT River Database (SWORD)")
+app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN],suppress_callback_exceptions=True, title="SWOT Viz")
 
 #################################################################################################
 ### Opens 'About SWORD' markdown document used in the modal overlay.
@@ -822,12 +822,12 @@ header = dbc.Navbar(
                             html.Div(
                                 [
                                     html.H2(
-                                        "SWOT River Database (SWORD)",
+                                        "SWOT Viz",
                                         style={
                                             "textAlign":"left",
                                             "margin-top":"15px"}),
                                     html.P(html.H4(
-                                        "Interactive Dashboard",
+                                        "Interactive Dashboard - based on SWOT explorer by Elizabeth Altenau",
                                         style={"textAlign":"left"})),
                                 ],
                                 id="app-title",
@@ -1591,5 +1591,5 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
     return children
 
 if __name__ == '__main__':
-    app.run_server()
-    # app.run_server(debug=True) #use this line instead of the line before to run the app in debug mode.
+    # app.run_server()
+    app.run_server(debug=True) #use this line instead of the line before to run the app in debug mode.
