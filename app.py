@@ -54,13 +54,14 @@ def get_data(fn):
 
     return nodes_all
 
+
 # Dummy csv file for plotting
 # df = pd.read_csv('https://gist.githubusercontent.com/chriddyp/5d1ea79569ed194d432e56108a04d188/raw/a9f9e8076b837d541398e999dcbac2b2826a81f8/gdp-life-exp-2007.csv')
 out_csv_folder = "data/velocity_csv_utc"
 csv_files = os.listdir(out_csv_folder)
-csv_file = csv_files[0]
-df = pd.read_csv(os.path.join(out_csv_folder, csv_file), index_col='utc_dt', parse_dates=True, infer_datetime_format=True)
-df.drop(columns="site_no", inplace=True)
+# csv_file = csv_files[0]
+# df = pd.read_csv(os.path.join(out_csv_folder, csv_file), index_col='utc_dt', parse_dates=True, infer_datetime_format=True)
+# df.drop(columns="site_no", inplace=True)
 # print(df.head())
 
 #################################################################################################
@@ -1154,8 +1155,8 @@ app.layout = html.Div([
                 ],
                 style={"width":"25%", 'align-items': 'left', 'justify-content': 'left'}  # , 'color': 'Gold', 'font-size': 15
             ),
-            dcc.Graph(id="TimeSeries", figure=plot_timeseries(df)),
-            dcc.Graph(id="Scatter", figure=plot_scatter(df))
+            dcc.Graph(id="TimeSeries"),  #, figure=plot_timeseries(df)
+            dcc.Graph(id="Scatter")  #, figure=plot_scatter(df)
 
         ]),
         # BNY END
