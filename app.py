@@ -445,134 +445,6 @@ attr_csv = pd.DataFrame(data = {
     'attribute_value': [25000, 150, 'Yukon River', 'etc.']
 })
 
-# Text for the modal pop-up triggered by the "Report" button above the node plots.
-markdown_body = html.Div([
-    dcc.Markdown('''
-    ### Reporting Instructions
-
-    The SWORD database is an evolving product that is intended to undergo
-    continued improvements and updates before and after the launch of SWOT.
-    Currently, there are limited manual adjustments made to SWORD which result
-    in the database containing some artifacts primarily due to errors that occur
-    during the merging process between the various databases. We have done our best
-    to manually and automatically find major errors in SWORD, however, input from
-    the SWOT Science Team and other hydrologists is helpful to identify persistent
-    artifacts. **This page allows users to report common SWORD issues.** More
-    details on how to report more complex issues (such as reach definition changes or
-    centerline adjustments) can be found in the [SWORD Update Request Documentation]
-    (https://drive.google.com/file/d/15OSrP0HY5HnwpEWh67ObYEWqwsAPSIEv/view?usp=sharing).
-
-    ### Update Timeline
-
-    SWORD updates are classified into two categories: 1) trivial and 2) non-trivial.
-    Trivial updates are easier to implement and impact less of the database such as
-    the report issues on this dashboard: node order changes, river name changes, reach
-    neighbor changes, and river name changes. Non-trivial updates are more difficult to
-    implement and may take manual intervention. Examples of non-trivial updates are
-    river centerline adjustments and reach definition changes.  **Trivial updates can
-    be expected to be implemented approximately every quarter, while non-trivial updates
-    are not guaranteed to be implemented before SWOT reprocessings (~annually).**
-
-    ### Dashboard Reporting
-
-    Users can report a single reach or a batch CSV file for the report categories below. If
-    a customized or non-trival update is required please refer to the [SWORD Update Request Documentation]
-    (https://drive.google.com/file/d/15OSrP0HY5HnwpEWh67ObYEWqwsAPSIEv/view?usp=sharing). If you
-    encounter any problems while reporting update requests, or have any questions, please feel free to email
-    **sword_riverdb@gmail.com**.
-
-    Each request type has a unique "report index" which is required when submitting batch files.
-    Report indexes are as follows:
-    '''
-    ),
-    dash_table.DataTable(
-        index_tbl.to_dict('records'),
-        [{"name": i, "id": i} for i in index_tbl.columns],
-        style_cell={'textAlign': 'left'},
-    ),
-    html.Br(),
-    dcc.Markdown('''
-    **Reach Type Change:**
-
-    Reach “type” changes do not affect reach boundaries, only the number of the type identifier
-    in the reach and node ids (the last digit in the id structure). For example, a user may
-    notice that a current reach identified as a lake (type = 3) is located below a reservoir
-    and dam and should be reassigned as a river reach (type = 1). Type categories in
-    SWORD are: 1 - river, 3 - lake/reservior, 4 - dam/waterfall, 5 - unreliable topology (such as deltas).
-    To report a reach type change, users should submit a **CSV file** containing three columns:
-    the current "reach id", the "report index", and the "new type" of the reach. **Please note
-    that column order matters!**
-    '''
-    ),
-    dash_table.DataTable(
-        type_csv.to_dict('records'),
-        [{"name": i, "id": i} for i in type_csv.columns],
-        style_cell={'textAlign': 'left'},
-    ),
-    html.Br(),
-    dcc.Markdown('''
-    **Node Order Change:**
-
-    Node directions can be reversed in areas where flow accumulation and elevation resolution
-    are poor (i.e., there is no change), therefore it is difficult to automatically identify
-    correct topology. Incorrect node directions are often identified when the node order is the
-    in opposite direction of elevation change or, in areas where elevation and flow accumulation
-    are spatially static, the upstream or downstream neighbors are incorrect. To report a node order change,
-    users should submit a **CSV file** containing two columns: the current "reach id" and the "report index".
-    **Please note that column order matters!**
-    '''
-    ),
-    dash_table.DataTable(
-        node_csv.to_dict('records'),
-        [{"name": i, "id": i} for i in node_csv.columns],
-        style_cell={'textAlign': 'left'},
-    ),
-    html.Br(),
-    dcc.Markdown('''
-    **Reach Neighbor Change:**
-
-    In areas where topology is hard to automatically determine, upstream and downstream neighbors
-    may be incorrect. To report a reach neighbor change, users should submit a **CSV file** containing
-    four columns: the current "reach id", the "report index", the new "upstream neighbors", and the new
-    "downstream neighbors". **Please note that column order matters!**
-    '''
-    ),
-    dash_table.DataTable(
-        ngh_csv.to_dict('records'),
-        [{"name": i, "id": i} for i in ngh_csv.columns],
-        style_cell={'textAlign': 'left'},
-    ),
-    html.Br(),
-    dcc.Markdown('''
-    **Attribute Value Change:**
-
-    SWORD attributes are derived by merging many different global datasets and their respective
-    attributes into one congruent product. In cases where the river centerlines do not match well
-    between databases, river attributes may be missing or incorrect. These errors are more common
-    around tributary and channel junctions, as well as in large braided and anastomosing rivers.
-    There are five SWORD attributes users may report new values for. These attributes and their
-    "attribute indexes" are as follows:
-    '''
-    ),
-    dash_table.DataTable(
-        attr_index_tbl.to_dict('records'),
-        [{"name": i, "id": i} for i in attr_index_tbl.columns],
-        style_cell={'textAlign': 'left'},
-    ),
-    html.Br(),
-    dcc.Markdown('''
-    To report an attribute value change, users should submit a **CSV file** containing four columns:
-    the current "reach id", the "report index", the "attribute index" and the new "attribute value".
-    **Please note that column order matters!**
-    '''
-    ),
-    dash_table.DataTable(
-        attr_csv.to_dict('records'),
-        [{"name": i, "id": i} for i in attr_csv.columns],
-        style_cell={'textAlign': 'left'},
-    ),
-    html.Br()
-])
 
 #################################################################################################
 ### Formats for the different reporting options triggered by the report list in the
@@ -782,86 +654,6 @@ attr_body = html.Div([
     html.Div(id='submit_status4', style={"width":"50%"}),
 ])
 
-# Report reach modal overlay layout.
-report_overlay = dbc.Modal(
-    [
-        dbc.ModalBody(
-            html.Div(children=[
-                markdown_body,
-                html.Div([
-                    html.H5([
-                        'Upload a Batch CSV File:'
-                    ]),
-                ]),
-                html.Div([
-                    dcc.Upload(id='upload-data',
-                    children=html.Div([
-                        'Drag and Drop or ',
-                        html.A(
-                            'Select Files',
-                            style={
-                                'color':'#2fa4e7',
-                                'text-decoration':'underline'
-                            }
-                        )
-                    ]), style={
-                        'width': '36%',
-                        'lineHeight': '60px',
-                        'borderWidth': '1px',
-                        'borderStyle': 'dashed',
-                        'borderRadius': '5px',
-                        'textAlign': 'center',
-                    }, multiple=True),
-                ]),
-                html.Div([html.Br()]),
-                html.Div(id='upload-status'),
-                html.Div([html.Br()]),
-                html.Div([
-                    html.H5([
-                    'Report a Single Reach:'
-                    ]),
-                ]),
-                html.Div([
-                    dcc.Dropdown(
-                        id='Report_DropBox',
-                        options=report_list,
-                        style={
-                            # "textAlign":"center",
-                            "width":"60%",
-                        }
-                    ),
-                ]),
-                html.Div([html.Br()]),
-                html.Div(id='report-options'), #different options for reporting a reach.
-            ],#style={"textAlign":"center"}
-            ),
-        ),
-        html.Div([html.Br()]),
-        dbc.ModalFooter(
-            dbc.Button(
-                "Close",
-                id="report-close",
-                className="howto-bn"
-                )),
-    ],
-    id="report-modal",
-    size="lg",
-)
-
-# Button to report a reach and trigger the report modal pop-up.
-button_report = dbc.Button(
-    "Report Reach",
-    id="report-open",
-    outline=False,
-    color="primary",
-    style={
-        "textTransform": "none",
-        "margin-left": "5px",
-        "color":"white",
-        # "background-color":"#C42828",
-        "textAlign":"center"
-    },
-)
 
 # Button to plot node-level attributes.
 button_plot = dbc.Button(
@@ -1120,8 +912,7 @@ app.layout = html.Div([
                     'marginBottom' : '5px',
                     'size':'25'}
             ),
-            html.Div('(click "Report Reach" to file a problem \
-                with a reach)'),
+            # html.Div('(click "Report Reach" to file a problem with a reach)'),
             dcc.Input(
                 id = 'ReachID',
                 type = 'number',
@@ -1135,8 +926,8 @@ app.layout = html.Div([
                 size='100'
                 ),
             button_plot,
-            button_report,
-            report_overlay,
+            # button_report,
+            # report_overlay,
             dcc.Graph(
                 figure=plot_nodes(node_df_cp),
                 id='ReachGraph')
@@ -1485,8 +1276,7 @@ def toggle_modal(n1, n2, is_open):
 @app.callback(
     Output("report-modal", "is_open"),
     [Input("report-open", "n_clicks"), Input("report-close", "n_clicks")],
-    [State("report-modal", "is_open")],
-)
+    [State("report-modal", "is_open")])
 def toggle_modal(n3, n4, is_open):
     if n3 or n4:
         return not is_open
