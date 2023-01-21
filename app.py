@@ -1,17 +1,17 @@
-import base64
-import datetime
-import io
+# import base64
+# import datetime
+# import io
 import os
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
-from csv import writer, reader
-import time
+# from csv import writer, reader
+# import time
 import dash
 from dash import dcc
-from dash import html, dash_table
+from dash import html  # , dash_table
 from dash.dependencies import Input, Output, State
-from dash.exceptions import PreventUpdate
+# from dash.exceptions import PreventUpdate
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import plotly.express as px
@@ -27,10 +27,10 @@ load_figure_template("cerulean")
 def get_data(fn):
     nc_files = [file for file in os.listdir(fn) if 'nodes' in file ]
     for ind in list(range(len(nc_files))):
-        nodes_nc = nc.Dataset(fn+nc_files[ind])
+        nodes_nc = nc.Dataset(fn + nc_files[ind])
         node_df = pd.DataFrame(
-            np.array(
-                [nodes_nc['nodes']['reach_id'][:],
+            np.array([
+                nodes_nc['nodes']['reach_id'][:],
                 nodes_nc['nodes']['node_id'][:],
                 nodes_nc['nodes']['wse'][:],
                 nodes_nc['nodes']['width'][:],
@@ -39,15 +39,12 @@ def get_data(fn):
                 nodes_nc['nodes']['n_chan_mod'][:],
                 nodes_nc['nodes']['sinuosity'][:],
                 nodes_nc['nodes']['node_order'][:]]).T)
-        node_df.rename(columns = {0:'reach_id', 1:'node_id',
-            2:'wse', 3:'width', 4:'facc', 5:'dist_out',
-            6:'n_chan_mod',7:'sinuosity',8:'node_order'}, inplace = True)
+        node_df.rename(columns={0: 'reach_id', 1: 'node_id', 2: 'wse', 3: 'width', 4: 'facc', 5: 'dist_out', 6: 'n_chan_mod', 7: 'sinuosity', 8: 'node_order'}, inplace = True)
         try:
             nodes_all = pd.concat([nodes_all, node_df])
         except NameError:
             nodes_all = node_df.copy()
-        del(nodes_nc)
-
+        del nodes_nc
     return nodes_all
 
 
@@ -61,17 +58,17 @@ csv_files = os.listdir(out_csv_folder)
 # print(df.head())
 
 #################################################################################################
-### Function for plotting node level data.
+
 
 def plot_nodes(df, reach=None):
+    # Function for plotting node level data.
     if reach is None:
-        rch = 81247100041 #default reach
+        rch = 81247100041  # default reach
     else:
         rch = reach
-
     node_reaches = df.loc[df['reach_id'] == rch]
 
-    #add base plots
+    # add base plots
     fig = make_subplots(rows=1, cols=2)
     fig.add_trace(
         go.Scatter(
@@ -153,7 +150,7 @@ def plot_nodes(df, reach=None):
     # fig.update_yaxes(
     #     title_text="Sinuosity",
     #     row=3, col=2)
-    #overall figure properties
+    # overall figure properties
     fig.update_layout(
         height=400, #width=1400,
         title_text="Reach "+str(rch)+": Node Level Attributes",
@@ -185,6 +182,7 @@ def plot_timeseries(df, reach=None):
         transition_duration=500  # BNY
     )
     return fig
+
 
 def plot_scatter(df, reach=None):
     """ New function to plot the reach-level SWOT timeseries data """
@@ -226,21 +224,21 @@ def plot_scatter(df, reach=None):
     fig.update_yaxes(title_text="X-section area", row=2, col=1)
     fig.update_xaxes(title_text="WSE (feet)", row=2, col=2)
     fig.update_yaxes(title_text="Velocity (feet/sec)", row=2, col=2)
-    #overall figure properties
+    # overall figure properties
     fig.update_layout(
-        height=700, #width=1400,
+        height=700,  # width=1400,
         title_text="USGS Gage Field Measurements",
         title_x=0.5,
         showlegend=False,
-        plot_bgcolor='#dce0e2', #'whitesmoke'
+        plot_bgcolor='#dce0e2',  # 'whitesmoke'
         transition_duration=500  # BNY
     )
     return fig
 
+
 #################################################################################################
 ###############################  START OF APP CODE  #############################################
 #################################################################################################
-
 # Read in node data.
 node_df = get_data("data/")
 node_df_cp = node_df.copy()
@@ -249,7 +247,7 @@ node_df_cp = node_df.copy()
 app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN],suppress_callback_exceptions=True, title="SWOT Viz")
 
 #################################################################################################
-### Opens 'About SWORD' markdown document used in the modal overlay.
+# ## Opens 'About SWORD' markdown document used in the modal overlay.
 with open("about.md", "r") as f:
     about_md = f.read()
 
@@ -295,12 +293,12 @@ button_about = dbc.Button(
     "About",
     id="howto-open",
     outline=False,
-    color="#2b3b90", #swot dark blue
+    color="#2b3b90",  # swot dark blue
     style={
         "textTransform": "none",
         "margin-right": "5px",
-        "color":"white",
-        "background-color":"#2b3b90",
+        "color": "white",
+        "background-color": "#2b3b90",
     },
 )
 
@@ -308,14 +306,14 @@ button_about = dbc.Button(
 button_download = dbc.Button(
     "Download",
     outline=False,
-    color="#2b3b90", #swot dark blue
+    color="#2b3b90",  # swot dark blue
     # href="https://zenodo.org/record/5643392#.Yv-oeezML0s",
     id="download-open",
     style={
         "text-transform": "none",
         "margin-left": "5px",
-        "color":"white",
-        "background-color":"#2b3b90",
+        "color": "white",
+        "background-color": "#2b3b90",
     },
 )
 
@@ -328,9 +326,9 @@ button_plot = dbc.Button(
     style={
         "textTransform": "none",
         "margin-left": "5px",
-        "color":"white",
-        # "background-color":"green",
-        "textAlign":"center"
+        "color": "white",
+        # "background-color": "green",
+        "textAlign": "center"
     },
 )
 
@@ -418,7 +416,7 @@ tabs_styles = {
     'height': '51px'
 }
 tab_style = {
-    'borderTop': '5px' , #2fa4e7 cerulean
+    'borderTop': '5px',  # 2fa4e7 cerulean
     'borderBottom': '5px',
     'padding': '10px',
     'fontWeight': 'bold',
@@ -427,7 +425,7 @@ tab_style = {
 }
 
 tab_selected_style = {
-    'borderTop': '5px solid #2fa4e7', #2fa4e7 cerulean
+    'borderTop': '5px solid #2fa4e7',  # 2fa4e7 cerulean
     'borderBottom': '5px solid #2fa4e7',
     'borderLeft': '5px solid #2fa4e7',
     'borderRight': '5px solid #2fa4e7',
@@ -521,142 +519,120 @@ dropdown_list_na = [
     ]
 
 #################################################################################################
-### PRIMARY APP LAYOUT.
+# ## PRIMARY APP LAYOUT.
 
 app.layout = html.Div([
-        header,
-        #insert tabs
-        html.Div([
-            dcc.Tabs(
-                id="all-tabs-inline",
-                value='tab-4',
-                children=[
-                    dcc.Tab(
-                        label='Africa',
-                        value='tab-1',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                    dcc.Tab(
-                        label='Asia',
-                        value='tab-2',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                    dcc.Tab(
-                        label='Europe & Middle East',
-                        value='tab-3',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                    dcc.Tab(
-                        label='North America',
-                        value='tab-4',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                    dcc.Tab(
-                        label='Oceania',
-                        value='tab-5',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                    dcc.Tab(
-                        label='South America',
-                        value='tab-6',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                ],
-            style=tabs_styles
-            )
-        ]),
-        html.Br(),
-        html.Div(id='tabs-content-example-graph'), #callback for tab content.
-        html.Div([
-            html.H5(
-                'Type a Reach ID and click ENTER or "Plot Reach" \
-                    to see node level attributes:',
-                style={
-                    'marginTop' : '5px',
-                    'marginBottom' : '5px',
-                    'size':'25'}
-            ),
-            # html.Div('(click "Report Reach" to file a problem with a reach)'),
+    header,
+    # insert tabs
+    html.Div([
+        dcc.Tabs(
+            id="all-tabs-inline",
+            value='tab-4',
+            children=[
+                dcc.Tab(
+                    label='Africa',
+                    value='tab-1',
+                    style=tab_style,
+                    selected_style=tab_selected_style),
+                dcc.Tab(
+                    label='Asia',
+                    value='tab-2',
+                    style=tab_style,
+                    selected_style=tab_selected_style),
+                dcc.Tab(
+                    label='Europe & Middle East',
+                    value='tab-3',
+                    style=tab_style,
+                    selected_style=tab_selected_style),
+                dcc.Tab(
+                    label='North America',
+                    value='tab-4',
+                    style=tab_style,
+                    selected_style=tab_selected_style),
+                dcc.Tab(
+                    label='Oceania',
+                    value='tab-5',
+                    style=tab_style,
+                    selected_style=tab_selected_style),
+                dcc.Tab(
+                    label='South America',
+                    value='tab-6',
+                    style=tab_style,
+                    selected_style=tab_selected_style),
+            ], style=tabs_styles)]),
+    html.Br(),
+    html.Div(id='tabs-content-example-graph'),  # callback for tab content.
+    html.Div(
+        [
+            html.H5('Type a Reach ID and click ENTER or "Plot Reach" to see node level attributes:', style={'marginTop' : '5px', 'marginBottom': '5px', 'size': '25'}),
             dcc.Input(
-                id = 'ReachID',
-                type = 'number',
-                value = 81247100041,
-                placeholder = "Reach ID",
+                id='ReachID',
+                type='number',
+                value=81247100041,
+                placeholder="Reach ID",
                 debounce=True,
                 min=int(np.min(node_df['reach_id'])),
                 max=int(np.max(node_df['reach_id'])),
                 step=1,
                 required=False,
-                size='100'
-                ),
+                size='100'),
             button_plot,
             # button_report,
             # report_overlay,
-            dcc.Graph(
-                figure=plot_nodes(node_df_cp),
-                id='ReachGraph')
-        ]), #end subdiv3
-        # BNY
-        html.Div([
+            dcc.Graph(figure=plot_nodes(node_df_cp), id='ReachGraph')
+        ]
+    ),  # end subdiv3
+    # BNY
+    html.Div(
+        [
             html.H5("Timeseries Data"),
             html.Div(
                 [
                     html.Label('Choose CSV file to plot USGS Field Measure Data'),
-                    dcc.Dropdown(csv_files, csv_files[0], id="csv_file_list", 
-                    searchable=False, clearable=False, maxHeight=200, #optionHeight=100,
-                    # style={'color': 'Gold', 'font-size': 15}
-                    ),
+                    dcc.Dropdown(csv_files, csv_files[0], id="csv_file_list", searchable=False, clearable=False, maxHeight=200,),  # optionHeight=100, # style={'color': 'Gold', 'font-size': 15}
                     html.Br()
                 ],
-                style={"width":"25%", 'align-items': 'left', 'justify-content': 'left'}  # , 'color': 'Gold', 'font-size': 15
+                style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}  # , 'color': 'Gold', 'font-size': 15
             ),
-            dcc.Graph(id="TimeSeries"),  #, figure=plot_timeseries(df)
-            dcc.Graph(id="Scatter")  #, figure=plot_scatter(df)
 
+            dcc.Graph(id="TimeSeries"),  # , figure=plot_timeseries(df)
+            dcc.Graph(id="Scatter")  # , figure=plot_scatter(df)        
         ]),
-        # BNY END
-        # html.Br(),
-        html.Div(children=[
-            html.Div(
-                'Copyright (c) 2022 University of North Carolina at Chapel Hill',
-                style={
-                    'textAlign':'left',
-                    'font-size': '0.7em',
-                    'marginLeft':'5px',
-                },
-            ),
-            html.Div(
-                'Dashboard written in Python using the Dash web framework.',
-                style={
-                    'textAlign':'left',
-                    'font-size': '0.7em',
-                    'marginLeft':'5px',
-                }
-            ),
-            html.Div(
-                'Base map layer is the "cartodbpositron" map style provided by CARTO.',
-                style={
-                    'textAlign':'left',
-                    'font-size': '0.7em',
-                    'marginLeft':'5px',
-                }
-            )
-        ], style={'textAlign':'left', 'color':'slateGrey'}),
-    ],
-    style={
-        'marginTop' : '5px',
-        'marginRight' : '50px',
-        'marginBottom' : '5px',
-        'marginLeft' : '50px',
-        "textAlign":"center"}
-) #end of app layout
+    html.Div(children=[
+        html.Div(
+            'Copyright (c) 2022 University of North Carolina at Chapel Hill',
+            style={
+                'textAlign': 'left',
+                'font-size': '0.7em',
+                'marginLeft': '5px',
+            },
+        ),
+        html.Div(
+            'Dashboard written in Python using the Dash web framework.',
+            style={
+                'textAlign': 'left',
+                'font-size': '0.7em',
+                'marginLeft': '5px',
+            }
+        ),
+        html.Div(
+            'Base map layer is the "cartodbpositron" map style provided by CARTO.',
+            style={
+                'textAlign':'left',
+                'font-size': '0.7em',
+                'marginLeft':'5px',
+            }
+        )
+    ], style={'textAlign': 'left', 'color': 'slateGrey'})],
+    style={'marginTop': '5px', 'marginRight': '50px', 'marginBottom': '5px', 'marginLeft': '50px', "textAlign": "center"}
+)  # end of app layout
 
 #################################################################################################
 ######################################  CALLBACKS  ##############################################
 #################################################################################################
 
-#Callback that triggers the main map dispaly to change based on which tab is clicked.
-#output is the tab layout.
+# Callback that triggers the main map dispaly to change based on which tab is clicked.
+# output is the tab layout.
 @app.callback(Output('tabs-content-example-graph', 'children'),
               Input('all-tabs-inline', 'value'),)
 def render_content(tab):
@@ -665,39 +641,27 @@ def render_content(tab):
             html.H6(
                 dbc.Row(
                     [
-                        dbc.Col(html.H3( #was H5
+                        dbc.Col(html.H3(
                             'SWORD Version 14'),
                             width=8,
                             className='mt-2',
-                            style={"textAlign":"left"}),
+                            style={"textAlign": "left"}),
                         dbc.Col(dcc.Dropdown(
                             id='DropBox',
                             options=dropdown_list_af,
                             value=dropdown_list_af[0]['value'],
-                            style={"textAlign":"left"}),
-                        style={"textAlign":"right"})
+                            style={"textAlign": "left"}),
+                            style={"textAlign": "right"})
                     ]
                 ),
             ),
             html.Div([
                 html.Div(
-                    '**PLEASE NOTE: Reach geometries have been simplified \
-                        for map efficiency, however, some large basins \
-                            (i.e. Amazon, Ganges-Barmaputra) may still take \
-                                a few moments to load.**',
-                    style={
-                        'marginTop' : '5px',
-                        'marginBottom' : '5px',
-                        'size':'25',
-                        'color':'#C42828'},
-                    ),
-            ]),
-            html.Iframe(
-                id='BasinMap',
-                srcDoc=open('data/af_basin_map.html', 'r').read(),
-                style={"height": "500px", "width": "100%"}
-                )
-        ]) #end subdiv2
+                    '**PLEASE NOTE: Reach geometries have been simplified for map efficiency, however, some large basins (i.e. Amazon, Ganges-Barmaputra) may still take a few moments to load.**',
+                    style={'marginTop': '5px', 'marginBottom': '5px', 'size': '25', 'color': '#C42828'})]
+            ),
+            html.Iframe(id='BasinMap', srcDoc=open('data/af_basin_map.html', 'r').read(), style={"height": "500px", "width": "100%"})
+        ])  # end subdiv2
     elif tab == 'tab-2':
         return html.Div([
             html.H6(
@@ -707,13 +671,13 @@ def render_content(tab):
                             'SWORD Version 14'),
                             width=8,
                             className='mt-2',
-                            style={"textAlign":"left"}),
+                            style={"textAlign": "left"}),
                         dbc.Col(dcc.Dropdown(
                             id='DropBox',
                             options=dropdown_list_as,
                             value=dropdown_list_as[0]['value'],
-                            style={"textAlign":"left"}),
-                        style={"textAlign":"right"})
+                            style={"textAlign": "left"}),
+                        style={"textAlign": "right"})
                     ]
                 ),
             ),
@@ -724,8 +688,8 @@ def render_content(tab):
                             (i.e. Amazon, Ganges-Barmaputra) may still take \
                                 a few moments to load.**',
                     style={
-                        'marginTop' : '5px',
-                        'marginBottom' : '5px',
+                        'marginTop': '5px',
+                        'marginBottom': '5px',
                         'size':'25',
                         'color':'#C42828'},
                     ),
@@ -750,8 +714,8 @@ def render_content(tab):
                             id='DropBox',
                             options=dropdown_list_eu,
                             value=dropdown_list_eu[0]['value'],
-                            style={"textAlign":"left"}),
-                        style={"textAlign":"right"})
+                            style={"textAlign": "left"}),
+                    style={"textAlign": "right"})
                     ]
                 ),
             ),
@@ -889,14 +853,16 @@ def render_content(tab):
                 )
         ]) #end subdiv2
 
-#Callback that triggers the regional maps to change based on the "Dropbox" option.
+
+# Callback that triggers the regional maps to change based on the "Dropbox" option.
 @app.callback(
     Output("BasinMap", "srcDoc"),
     Input("DropBox", "value"))
 def update_output_div(input_value):
-    return open(input_value,'r').read()
+    return open(input_value, 'r').read()
 
-#Callback that plots the node level attributes when a Reach ID is put into the input box.
+
+# Callback that plots the node level attributes when a Reach ID is put into the input box.
 @app.callback(
     [
         Output('ReachGraph', 'figure'),
@@ -913,11 +879,11 @@ def update_graph(term, n_clicks):
         n_clicks = None
         return fig, n_clicks
 
+
 @app.callback(
     Output("TimeSeries", "figure"),
     Output("Scatter", "figure"),
-    Input("csv_file_list", "value")
-    )
+    Input("csv_file_list", "value"))
 def update_ts_graph(csv_file):
     df = pd.read_csv(os.path.join(out_csv_folder, csv_file), index_col='utc_dt', parse_dates=True, infer_datetime_format=True)
     df.drop(columns="site_no", inplace=True)
@@ -951,4 +917,4 @@ def toggle_modal(n5, n6, is_open):
 
 if __name__ == '__main__':
     # app.run_server()
-    app.run_server(debug=True) #use this line instead of the line before to run the app in debug mode.
+    app.run_server(debug=True)  # use this line instead of the line before to run the app in debug mode.
