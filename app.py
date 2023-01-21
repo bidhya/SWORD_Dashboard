@@ -194,28 +194,28 @@ def plot_scatter(df, reach=None):
         go.Scatter(
             x=df.gage_height,
             y=df.cfs,
-            mode="markers"),
+            mode="markers", text=df.index.date),
         row=1, col=1)
 
     fig.add_trace(
         go.Scatter(
             x=df.gage_height,
             y=df.width,
-            mode="markers"),
+            mode="markers", text=df.index.date),
         row=1, col=2)
 
     fig.add_trace(
         go.Scatter(
             x=df.gage_height,
             y=df.area,
-            mode="markers"),
+            mode="markers", text=df.index.date),
         row=2, col=1)
 
     fig.add_trace(
         go.Scatter(
             x=df.gage_height,
             y=df.velocity,
-            mode="markers"),
+            mode="markers", text=df.index.date),
         row=2, col=2)
     # Update xaxis properties
     fig.update_xaxes(title_text="WSE (feet)", row=1, col=1)
@@ -899,12 +899,12 @@ def update_output_div(input_value):
 #Callback that plots the node level attributes when a Reach ID is put into the input box.
 @app.callback(
     [
-        Output(component_id='ReachGraph', component_property='figure'),
-        Output(component_id='plot_reach', component_property='n_clicks'),
+        Output('ReachGraph', 'figure'),
+        Output('plot_reach', 'n_clicks'),
     ],
     [
-        Input(component_id='ReachID', component_property='value'),
-        Input(component_id='plot_reach', component_property='n_clicks'),
+        Input('ReachID', 'value'),
+        Input('plot_reach', 'n_clicks'),
     ]
 )
 def update_graph(term, n_clicks):
@@ -921,6 +921,7 @@ def update_graph(term, n_clicks):
 def update_ts_graph(csv_file):
     df = pd.read_csv(os.path.join(out_csv_folder, csv_file), index_col='utc_dt', parse_dates=True, infer_datetime_format=True)
     df.drop(columns="site_no", inplace=True)
+    df = df["1990":]
     fig_ts = plot_timeseries(df)
     fig_scatter = plot_scatter(df)
     return fig_ts, fig_scatter
