@@ -23,6 +23,7 @@ load_figure_template("cerulean")
 ######################################  FUNCTIONS  ##############################################
 #################################################################################################
 
+
 ### Function for formatting input node data.
 def get_data(fn):
     nc_files = [file for file in os.listdir(fn) if 'nodes' in file ]
@@ -174,7 +175,7 @@ def plot_timeseries(df, reach=None):
     fig.update_xaxes(title_text="Date")
     fig.update_yaxes(title_text="WSE (feet)")
     fig.update_layout(
-        height=500, #width=1400,
+        height=480, #width=1400,
         title_text="WSE from USGS Gage Field Measurements",
         title_x=0.5,
         showlegend=False,
