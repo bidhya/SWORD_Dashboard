@@ -54,21 +54,30 @@ def get_data(fn):
     return nodes_all
 
 
-# Dummy csv file for plotting
-# df = pd.read_csv('https://gist.githubusercontent.com/chriddyp/5d1ea79569ed194d432e56108a04d188/raw/a9f9e8076b837d541398e999dcbac2b2826a81f8/gdp-life-exp-2007.csv')
+# # Dummy csv file for plotting
+# # df = pd.read_csv('https://gist.githubusercontent.com/chriddyp/5d1ea79569ed194d432e56108a04d188/raw/a9f9e8076b837d541398e999dcbac2b2826a81f8/gdp-life-exp-2007.csv')
 out_csv_folder = "data/velocity_csv_utc"
-# csv_files = os.listdir(out_csv_folder)
-# csv_files = [f.split(".csv")[0] for f in csv_files]
-# csv_files = [f[2:] for f in csv_files if len(f) == 10]
-# csv_files = list(set(csv_files))
-csv_files = ['02350600', '02128000', '02399200', '02193340', '02167582', '02130900', '02401000', '02415000', '02353400', 
-'02462000', '02172300', '02344700', '02418760', '02374950', '03568933', '02088000', '02104220', '02187910', '02160326']
-# logging.info(csv_files)
-# csv_file = csv_files[0]
-# df = pd.read_csv(os.path.join(out_csv_folder, csv_file), index_col='utc_dt', parse_dates=True, infer_datetime_format=True)
-# df.drop(columns="site_no", inplace=True)
-# print(df.head())
+# # gages = os.listdir(out_csv_folder)
+# # gages = [f.split(".csv")[0] for f in gages]
+# # gages = [f[2:] for f in gages if len(f) == 10]
+# # gages = list(set(gages))
+# gages = ['02350600', '02128000', '02399200', '02193340', '02167582', '02130900', '02401000', '02415000', '02353400', 
+# '02462000', '02172300', '02344700', '02418760', '02374950', '03568933', '02088000', '02104220', '02187910', '02160326']
+# # logging.info(gages)
+# # csv_file = gages[0]
+# # df = pd.read_csv(os.path.join(out_csv_folder, csv_file), index_col='utc_dt', parse_dates=True, infer_datetime_format=True)
+# # df.drop(columns="site_no", inplace=True)
+# # print(df.head())
 
+# Read usgs gages
+df = pd.read_csv("data/reach_gage_mapping.csv", dtype=str)
+df.index = df.reach_id
+df["basin2"] = df.reach_id.apply(lambda x: x[:2])
+df["basin4"] = df.reach_id.apply(lambda x: x[:4])
+gages = sorted(list(df[df.basin2=="73"]["STAID"]))
+# Remove problematic gages with nodata
+gages.remove("01020000")
+del df
 #################################################################################################
 
 
@@ -602,7 +611,7 @@ app.layout = html.Div([
             html.Div(
                 [
                     html.Label('Choose CSV file to plot USGS Field Measure Data'),
-                    dcc.Dropdown(csv_files, csv_files[0], id="csv_file_list", searchable=True, clearable=False, maxHeight=200,),  # optionHeight=100, # style={'color': 'Gold', 'font-size': 15}
+                    dcc.Dropdown(gages, gages[0], id="csv_file_list", searchable=True, clearable=False, maxHeight=200,),  # optionHeight=100, # style={'color': 'Gold', 'font-size': 15}
                     html.Br()
                 ],
                 style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}  # , 'color': 'Gold', 'font-size': 15
@@ -877,15 +886,10 @@ def update_output_div(input_value):
 
 # Callback that plots the node level attributes when a Reach ID is put into the input box.
 @app.callback(
-    [
-        Output('ReachGraph', 'figure'),
-        Output('plot_reach', 'n_clicks'),
-    ],
-    [
-        Input('ReachID', 'value'),
-        Input('plot_reach', 'n_clicks'),
-    ]
-)
+    [Output('ReachGraph', 'figure'),
+    Output('plot_reach', 'n_clicks'),],
+    [Input('ReachID', 'value'),
+    Input('plot_reach', 'n_clicks'),])
 def update_graph(term, n_clicks):
     if term or n_clicks:
         fig = plot_nodes(node_df_cp, term)
@@ -934,5 +938,5 @@ def toggle_modal(n5, n6, is_open):
 
 
 if __name__ == '__main__':
-    app.run_server()
-    # app.run_server(debug=True)  # use this line instead of the line before to run the app in debug mode.
+    # app.run_server()
+    app.run_server(debug=True)  # use this line instead of the line before to run the app in debug mode.
