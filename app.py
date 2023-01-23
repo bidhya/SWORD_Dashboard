@@ -61,13 +61,8 @@ out_csv_folder = "data/velocity_csv_utc"
 # # gages = [f.split(".csv")[0] for f in gages]
 # # gages = [f[2:] for f in gages if len(f) == 10]
 # # gages = list(set(gages))
-# gages = ['02350600', '02128000', '02399200', '02193340', '02167582', '02130900', '02401000', '02415000', '02353400', 
-# '02462000', '02172300', '02344700', '02418760', '02374950', '03568933', '02088000', '02104220', '02187910', '02160326']
-# # logging.info(gages)
 # # csv_file = gages[0]
 # # df = pd.read_csv(os.path.join(out_csv_folder, csv_file), index_col='utc_dt', parse_dates=True, infer_datetime_format=True)
-# # df.drop(columns="site_no", inplace=True)
-# # print(df.head())
 
 # Read usgs gages
 df = pd.read_csv("data/reach_gage_mapping.csv", dtype=str)
@@ -77,7 +72,11 @@ df["basin4"] = df.reach_id.apply(lambda x: x[:4])
 gages = sorted(list(df[df.basin2=="73"]["STAID"]))
 # Remove problematic gages with nodata
 gages.remove("01020000")
-del df
+del df 
+# Or get a subset of gages directly populated inside dropdown box
+gages = ['01131500', '01205500', '01315000', '01371500', '01502632', '01563200', '02104220', '02128000', '02130900', 
+'02160326', '02167582', '02172002', '02172300', '02187910', '02193340', '02197500', '02215500', '02223248', '02338000', 
+'02344700', '02350600', '02399200', '02401000', '02415000', '02474560', '02475000', '02477500', '02479000', '03568933']
 #################################################################################################
 
 
@@ -610,8 +609,8 @@ app.layout = html.Div([
             html.H5("Timeseries Data"),
             html.Div(
                 [
-                    html.Label('Choose CSV file to plot USGS Field Measure Data'),
-                    dcc.Dropdown(gages, gages[0], id="csv_file_list", searchable=True, clearable=False, maxHeight=200,),  # optionHeight=100, # style={'color': 'Gold', 'font-size': 15}
+                    html.Label('Select USGS Gage to pull field measure data'),
+                    dcc.Dropdown(gages, gages[0], id="gage_list", searchable=True, clearable=False, maxHeight=200,),  # optionHeight=100, # style={'color': 'Gold', 'font-size': 15}
                     html.Br()
                 ],
                 style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}  # , 'color': 'Gold', 'font-size': 15
@@ -900,7 +899,7 @@ def update_graph(term, n_clicks):
 @app.callback(
     Output("TimeSeries", "figure"),
     Output("Scatter", "figure"),
-    Input("csv_file_list", "value"))
+    Input("gage_list", "value"))
 def update_ts_graph(gage):
     logging.info(gage)
     if os.path.exists(os.path.join(out_csv_folder, f"{gage}.csv")):
