@@ -19,6 +19,11 @@ import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 load_figure_template("cerulean")
 
+import logging
+from utils import get_usgs_data
+
+logging.basicConfig(filename="mylogs.log", level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
+
 #################################################################################################
 ######################################  FUNCTIONS  ##############################################
 #################################################################################################
@@ -52,7 +57,13 @@ def get_data(fn):
 # Dummy csv file for plotting
 # df = pd.read_csv('https://gist.githubusercontent.com/chriddyp/5d1ea79569ed194d432e56108a04d188/raw/a9f9e8076b837d541398e999dcbac2b2826a81f8/gdp-life-exp-2007.csv')
 out_csv_folder = "data/velocity_csv_utc"
-csv_files = os.listdir(out_csv_folder)
+# csv_files = os.listdir(out_csv_folder)
+# csv_files = [f.split(".csv")[0] for f in csv_files]
+# csv_files = [f[2:] for f in csv_files if len(f) == 10]
+# csv_files = list(set(csv_files))
+csv_files = ['02350600', '02128000', '02399200', '02193340', '02167582', '02130900', '02401000', '02415000', '02353400', 
+'02462000', '02172300', '02344700', '02418760', '02374950', '03568933', '02088000', '02104220', '02187910', '02160326']
+# logging.info(csv_files)
 # csv_file = csv_files[0]
 # df = pd.read_csv(os.path.join(out_csv_folder, csv_file), index_col='utc_dt', parse_dates=True, infer_datetime_format=True)
 # df.drop(columns="site_no", inplace=True)
@@ -157,7 +168,8 @@ def plot_nodes(df, reach=None):
         title_text="Reach "+str(rch)+": Node Level Attributes",
         title_x=0.5,
         showlegend=False,
-        plot_bgcolor='#dce0e2' #'whitesmoke'
+        plot_bgcolor='#dce0e2', # 'whitesmoke'
+        transition_duration=500
     )
     return fig
 
@@ -168,7 +180,7 @@ def plot_timeseries(df, reach=None):
     fig = px.line(
         df,
         x=df.index,
-        y="gage_height",
+        y="gage_height_va",
         markers=True,
         title="Water Surface Elevation (feet)",        
     )
@@ -179,7 +191,7 @@ def plot_timeseries(df, reach=None):
         title_text="WSE from USGS Gage Field Measurements",
         title_x=0.5,
         showlegend=False,
-        plot_bgcolor='#dce0e2', #'whitesmoke'
+        plot_bgcolor='#dce0e2',  # 'whitesmoke'
         transition_duration=500  # BNY
     )
     return fig
@@ -191,29 +203,29 @@ def plot_scatter(df, reach=None):
     fig = make_subplots(rows=2, cols=2)
     fig.add_trace(
         go.Scatter(
-            x=df.gage_height,
-            y=df.cfs,
+            x=df.gage_height_va,
+            y=df.discharge_va,
             mode="markers", text=df.index.date),
         row=1, col=1)
 
     fig.add_trace(
         go.Scatter(
-            x=df.gage_height,
-            y=df.width,
+            x=df.gage_height_va,
+            y=df.chan_width,
             mode="markers", text=df.index.date),
         row=1, col=2)
 
     fig.add_trace(
         go.Scatter(
-            x=df.gage_height,
-            y=df.area,
+            x=df.gage_height_va,
+            y=df.chan_area,
             mode="markers", text=df.index.date),
         row=2, col=1)
 
     fig.add_trace(
         go.Scatter(
-            x=df.gage_height,
-            y=df.velocity,
+            x=df.gage_height_va,
+            y=df.chan_velocity,
             mode="markers", text=df.index.date),
         row=2, col=2)
     # Update xaxis properties
@@ -590,7 +602,7 @@ app.layout = html.Div([
             html.Div(
                 [
                     html.Label('Choose CSV file to plot USGS Field Measure Data'),
-                    dcc.Dropdown(csv_files, csv_files[0], id="csv_file_list", searchable=False, clearable=False, maxHeight=200,),  # optionHeight=100, # style={'color': 'Gold', 'font-size': 15}
+                    dcc.Dropdown(csv_files, csv_files[0], id="csv_file_list", searchable=True, clearable=False, maxHeight=200,),  # optionHeight=100, # style={'color': 'Gold', 'font-size': 15}
                     html.Br()
                 ],
                 style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}  # , 'color': 'Gold', 'font-size': 15
@@ -885,13 +897,18 @@ def update_graph(term, n_clicks):
     Output("TimeSeries", "figure"),
     Output("Scatter", "figure"),
     Input("csv_file_list", "value"))
-def update_ts_graph(csv_file):
-    df = pd.read_csv(os.path.join(out_csv_folder, csv_file), index_col='utc_dt', parse_dates=True, infer_datetime_format=True)
-    df.drop(columns="site_no", inplace=True)
-    df = df["1990":]
-    fig_ts = plot_timeseries(df)
-    fig_scatter = plot_scatter(df)
-    return fig_ts, fig_scatter
+def update_ts_graph(gage):
+    logging.info(gage)
+    if os.path.exists(os.path.join(out_csv_folder, f"{gage}.csv")):
+        df = pd.read_csv(os.path.join(out_csv_folder, f"{gage}.csv"), index_col='measurement_dt', parse_dates=True, infer_datetime_format=True)
+    else:
+        # Download file
+        df = get_usgs_data.read_usgs_field_data(gage)
+        df.to_csv(os.path.join(out_csv_folder, f'{gage}.csv'), index=True, header=True)  # index_label='measurement_dt or utc_dt'
+    if len(df) > 0:
+        fig_ts = plot_timeseries(df)
+        fig_scatter = plot_scatter(df)
+        return fig_ts, fig_scatter
 
 
 # Callback for "About" modal popup
@@ -917,5 +934,5 @@ def toggle_modal(n5, n6, is_open):
 
 
 if __name__ == '__main__':
-    # app.run_server()
-    app.run_server(debug=True)  # use this line instead of the line before to run the app in debug mode.
+    app.run_server()
+    # app.run_server(debug=True)  # use this line instead of the line before to run the app in debug mode.
