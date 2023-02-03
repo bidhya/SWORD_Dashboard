@@ -79,6 +79,27 @@ reach_ts.index = reach_ts.time_str
 reach_ts = reach_ts.drop(columns="time_str")
 reach_list = list(reach_ts.reach_id.unique())
 
+# Read Node Timeseries data
+node_ts = pd.read_csv("D:/SWOT/SWOT_Viz/SWOT_sample_CSVs/SWOTnodes.csv", index_col=0)
+# we need WSE and Width
+node_cols = ["reach_id", "time_str", "wse", "width"]
+node_ts = node_ts[node_cols]
+# Replace fill_values with nan
+for col in node_cols[-2:]:
+    fill_value_mask = node_ts[col] <= int(meta.loc[col]["fill_value"])
+    node_ts.loc[fill_value_mask, col] = np.nan
+# Width column One high value, outside the valid range. Replace this one as well with nan
+col = "width"
+valid_max_mask = node_ts[col] >= int(meta.loc[col]["valid_max"])
+node_ts.loc[valid_max_mask, col] = np.nan
+node_ts["time_str"] = node_ts.time_str.apply(lambda x: "" if x=="no_data" else x)  # replace with empty string
+node_ts["time_str"] = node_ts.time_str.apply(lambda x: f"{x[:-3]}:{x[-3:]}")
+node_ts["time_str"] = node_ts.time_str.apply(lambda x: "" if x==":" else x)  # replace with empty string again
+node_ts["time_str"] = pd.to_datetime(node_ts.time_str, utc=True)
+node_ts = node_ts[~node_ts.time_str.isna()]  # select only with valid datetime
+# Index by date for plotting
+node_ts.index = node_ts.time_str
+node_ts = node_ts.drop(columns="time_str")
 
 # # Dummy csv file for plotting
 # # df = pd.read_csv('https://gist.githubusercontent.com/chriddyp/5d1ea79569ed194d432e56108a04d188/raw/a9f9e8076b837d541398e999dcbac2b2826a81f8/gdp-life-exp-2007.csv')
@@ -585,7 +606,7 @@ app.layout = html.Div([
             dcc.Dropdown(reach_list, reach_list[0], id="reach_list_dropdown", searchable=True, clearable=False, maxHeight=200),
         ], style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}),
         dcc.Graph(id="Reach_TS"),
-        # dcc.Graph(id="Node_TS")  # WSE and Width long profile of NODES for each reach
+        dcc.Graph(id="Node_TS")  # WSE and Width long profile of NODES for each reach
     ]),
 
     html.Div(
@@ -881,10 +902,12 @@ def update_graph(term, n_clicks):
 
 @app.callback(
     Output("Reach_TS", "figure"),
+    # Output("Node_TS", "figure"),
     Input("reach_list_dropdown", "value")
 )
 def plot_reach(reach_id):
     reach_ts_sel = reach_ts[reach_ts.reach_id == reach_id]
+    node_ts_sel = node_ts[node_ts.reach_id == reach_id]
     # Make plot directly here rather than calling another function
     fig = make_subplots(rows=2, cols=2)
     fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="lines+markers", name="wse"), row=1, col=1)
@@ -895,11 +918,15 @@ def plot_reach(reach_id):
     # fig.update_xaxes(title_text="DateTime (UTC)", row=1, col=1)
     # Update yaxis properties
     fig.update_yaxes(title_text="WSE (m)", row=1, col=1)
-    fig.update_yaxes(title_text="Width (m)", row=2, col=1)
+    fig.update_yaxes(title_text="Width (m)", row=1, col=2)
     # overall figure properties
     fig.update_xaxes(title_text="DateTime (UTC)")
-    fig.update_layout(height=800, title_text="Reach Level Attributes", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2', transition_duration=500)  # width=1400,  
-    return fig
+    fig.update_layout(height=600, title_text="Reach Level Attributes", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2', transition_duration=500)  # width=1400,  
+
+    node_fig = make_subplots(1, 2)
+    node_fig.add_trace(go.Scatter(x=node_ts_sel.index, y=reach_ts_sel["wse"], mode="lines+markers", name="wse"), row=1, col=1)
+    node_fig.add_trace(go.Scatter(x=node_ts_sel.index, y=reach_ts_sel["width"], mode="lines+markers", name="width"), row=1, col=2)
+    return fig#, node_fig
 
 
 @app.callback(
