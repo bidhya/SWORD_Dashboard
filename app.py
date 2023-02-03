@@ -85,7 +85,7 @@ reach_list = list(reach_ts.reach_id.unique())
 # Read Node Timeseries data
 node_ts = pd.read_csv("data/SWOT_sample_CSVs/SWOTnodes.csv", index_col=0)
 # we need WSE and Width
-node_cols = ["reach_id", "time_str", "wse", "width"]
+node_cols = ["reach_id", "time_str", "node_id", "node_dist", "xtrk_dist", "p_dist_out", "wse", "width"]
 node_ts = node_ts[node_cols]
 # Replace fill_values with nan
 for col in node_cols[-2:]:
@@ -606,7 +606,7 @@ app.layout = html.Div([
         html.H5("Reach Data"),
         html.Div([
             html.Label('Listing of Reaches'),
-            dcc.Dropdown(reach_list, placeholder="Select a Reach", id="reach_list_dropdown", searchable=True, clearable=True, maxHeight=200),
+            dcc.Dropdown(reach_list, placeholder="Select a reach to plot", id="reach_list_dropdown", searchable=True, clearable=True, maxHeight=200),
         ], style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}),
         dcc.Graph(id="Reach_TS"),
         # dcc.Graph(id="Node_TS")  # WSE and Width long profile of NODES for each reach
@@ -919,19 +919,22 @@ def plot_reach(reach_id):
     fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope2"], mode="lines+markers", name="slope2"), row=2, col=2)
     # Update xaxis properties
     # fig.update_xaxes(title_text="DateTime (UTC)", row=1, col=1)
-    # Update yaxis properties
     fig.update_yaxes(title_text="WSE [m]", row=1, col=1)
     fig.update_yaxes(title_text="Width [m]", row=1, col=2)
     fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=1)
     fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=2)
-
     # overall figure properties
     fig.update_xaxes(title_text="DateTime (UTC)")
     fig.update_layout(height=600, title_text=f"Reach: {reach_id}", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
 
-    node_fig = make_subplots(1, 2)
-    node_fig.add_trace(go.Scatter(x=node_ts_sel.index, y=reach_ts_sel["wse"], mode="lines+markers", name="wse"), row=1, col=1)
-    node_fig.add_trace(go.Scatter(x=node_ts_sel.index, y=reach_ts_sel["width"], mode="lines+markers", name="width"), row=1, col=2)
+    # # Plot Node data
+    # node_fig = make_subplots(1, 2)
+    # node_fig.add_trace(go.Scatter(x=node_ts_sel.index, y=reach_ts_sel["wse"], mode="lines+markers", name="wse"), row=1, col=1)
+    # node_fig.add_trace(go.Scatter(x=node_ts_sel.index, y=reach_ts_sel["width"], mode="lines+markers", name="width"), row=1, col=2)
+    # node_fig.update_yaxes(title_text="WSE [m]", row=1, col=1)
+    # node_fig.update_yaxes(title_text="Width [m]", row=1, col=2)
+    # node_fig.update_xaxes(title_text="DateTime (UTC)")
+    # node_fig.update_layout(height=400, title_text="Long profile of nodes", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
     return fig#, node_fig
 
 
