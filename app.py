@@ -64,6 +64,9 @@ reach_ts = reach_ts[sel_cols]
 for col in sel_cols[3:]:
     fill_value_mask = reach_ts[col] == int(meta.loc[col]["fill_value"])
     reach_ts.loc[fill_value_mask, col] = np.nan
+reach_ts["slope"] = reach_ts["slope"] * 1e6
+reach_ts["slope2"] = reach_ts["slope2"] * 1e6
+
 # Width column One high value, outside the valid range. Replace this one as well with nan
 col = "width"
 valid_max_mask = reach_ts[col] >= int(meta.loc[col]["valid_max"])
@@ -602,16 +605,16 @@ app.layout = html.Div([
     html.Div([
         html.H5("Reach Data"),
         html.Div([
-            html.Label('Select Reach'),
-            dcc.Dropdown(reach_list, reach_list[0], id="reach_list_dropdown", searchable=True, clearable=False, maxHeight=200),
+            html.Label('Listing of Reaches'),
+            dcc.Dropdown(reach_list, placeholder="Select a Reach", id="reach_list_dropdown", searchable=True, clearable=True, maxHeight=200),
         ], style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}),
         dcc.Graph(id="Reach_TS"),
-        dcc.Graph(id="Node_TS")  # WSE and Width long profile of NODES for each reach
+        # dcc.Graph(id="Node_TS")  # WSE and Width long profile of NODES for each reach
     ]),
 
     html.Div(
         [
-            html.H5("Timeseries Data"),
+            html.H5("USGS Field Measure Data"),
             html.Div(
                 [
                     html.Label('Select USGS Gage to pull field measure data'),
@@ -668,7 +671,7 @@ def render_content(tab):
                 dbc.Row(
                     [
                         dbc.Col(html.H3(
-                            'SWORD Version 14'),
+                            'SWOTViz v0.0'),
                             width=8,
                             className='mt-2',
                             style={"textAlign": "left"}),
@@ -694,7 +697,7 @@ def render_content(tab):
                 dbc.Row(
                     [
                         dbc.Col(html.H3(
-                            'SWORD Version 14'),
+                            'SWOTViz v0.0'),
                             width=8,
                             className='mt-2',
                             style={"textAlign": "left"}),
@@ -732,7 +735,7 @@ def render_content(tab):
                 dbc.Row(
                     [
                         dbc.Col(html.H3(
-                            'SWORD Version 14'),
+                            'SWOTViz v0.0'),
                             width=8,
                             className='mt-2',
                             style={"textAlign":"left"}),
@@ -770,7 +773,7 @@ def render_content(tab):
                 dbc.Row(
                     [
                         dbc.Col(html.H3(
-                            'SWORD Version 14'),
+                            'SWOTViz v0.0'),
                             width=8,
                             className='mt-2',
                             style={"textAlign":"left"}),
@@ -808,7 +811,7 @@ def render_content(tab):
                 dbc.Row(
                     [
                         dbc.Col(html.H3(
-                            'SWORD Version 14'),
+                            'SWOTViz v0.0'),
                             width=8,
                             className='mt-2',
                             style={"textAlign":"left"}),
@@ -846,7 +849,7 @@ def render_content(tab):
                 dbc.Row(
                     [
                         dbc.Col(html.H3(
-                            'SWORD Version 14'),
+                            'SWOTViz v0.0'),
                             width=8,
                             className='mt-2',
                             style={"textAlign":"left"}),
@@ -917,11 +920,14 @@ def plot_reach(reach_id):
     # Update xaxis properties
     # fig.update_xaxes(title_text="DateTime (UTC)", row=1, col=1)
     # Update yaxis properties
-    fig.update_yaxes(title_text="WSE (m)", row=1, col=1)
-    fig.update_yaxes(title_text="Width (m)", row=1, col=2)
+    fig.update_yaxes(title_text="WSE [m]", row=1, col=1)
+    fig.update_yaxes(title_text="Width [m]", row=1, col=2)
+    fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=1)
+    fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=2)
+
     # overall figure properties
     fig.update_xaxes(title_text="DateTime (UTC)")
-    fig.update_layout(height=600, title_text="Reach Level Attributes", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2', transition_duration=500)  # width=1400,  
+    fig.update_layout(height=600, title_text=f"Reach: {reach_id}", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
 
     node_fig = make_subplots(1, 2)
     node_fig.add_trace(go.Scatter(x=node_ts_sel.index, y=reach_ts_sel["wse"], mode="lines+markers", name="wse"), row=1, col=1)
