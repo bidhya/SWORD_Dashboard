@@ -127,37 +127,9 @@ def plot_nodes(df, reach=None):
         go.Scatter(
             x=node_reaches['dist_out']/1000,
             y=node_reaches['width'],
-            mode='lines+markers'),
+            mode='markers'),
         row=1, col=2
     )
-    # fig.add_trace(
-    #     go.Scatter(
-    #         x=node_reaches['dist_out']/1000,
-    #         y=node_reaches['node_order'],
-    #         mode='lines+markers'),
-    #     row=2, col=1
-    # )
-    # fig.add_trace(
-    #     go.Scatter(
-    #         x=node_reaches['dist_out']/1000,
-    #         y=node_reaches['facc'],
-    #         mode='lines+markers'),
-    #     row=2, col=2
-    # )
-    # fig.add_trace(
-    #     go.Scatter(
-    #         x=node_reaches['dist_out']/1000,
-    #         y=node_reaches['n_chan_mod'],
-    #         mode='lines+markers'),
-    #     row=3, col=1
-    # )
-    # fig.add_trace(
-    #     go.Scatter(
-    #         x=node_reaches['dist_out']/1000,
-    #         y=node_reaches['sinuosity'],
-    #         mode='lines+markers'),
-    #     row=3, col=2
-    # )
     # Update xaxis properties
     fig.update_xaxes(
         title_text="Distance from Outlet (km)",
@@ -165,18 +137,6 @@ def plot_nodes(df, reach=None):
     fig.update_xaxes(
         title_text="Distance from Outlet (km)",
         row=1, col=2)
-    # fig.update_xaxes(
-    #     title_text="Distance from Outlet (km)",
-    #     row=2, col=1)
-    # fig.update_xaxes(
-    #     title_text="Distance from Outlet (km)",
-    #     row=2, col=2)
-    # fig.update_xaxes(
-    #     title_text="Distance from Outlet (km)",
-    #     row=3, col=1)
-    # fig.update_xaxes(
-    #     title_text="Distance from Outlet (km)",
-    #     row=3, col=2)
     # Update yaxis properties
     fig.update_yaxes(
         title_text="Water Surface Elevation (m)",
@@ -184,18 +144,6 @@ def plot_nodes(df, reach=None):
     fig.update_yaxes(
         title_text="Width (m)",
         row=1, col=2)
-    # fig.update_yaxes(
-    #     title_text="Node Order",
-    #     row=2, col=1)
-    # fig.update_yaxes(
-    #     title_text="Flow Accumulation (sq.km)",
-    #     row=2, col=2)
-    # fig.update_yaxes(
-    #     title_text="Number of Channels",
-    #     row=3, col=1)
-    # fig.update_yaxes(
-    #     title_text="Sinuosity",
-    #     row=3, col=2)
     # overall figure properties
     fig.update_layout(
         height=400, #width=1400,
@@ -937,8 +885,21 @@ def update_graph(term, n_clicks):
 )
 def plot_reach(reach_id):
     reach_ts_sel = reach_ts[reach_ts.reach_id == reach_id]
-    wse_fig = px.line(reach_ts_sel["wse"])
-    return wse_fig
+    # Make plot directly here rather than calling another function
+    fig = make_subplots(rows=2, cols=2)
+    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="lines+markers", name="wse"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["width"], mode="lines+markers", name="width"), row=1, col=2)
+    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope"], mode="lines+markers", name="slope"), row=2, col=1)
+    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope2"], mode="lines+markers", name="slope2"), row=2, col=2)
+    # Update xaxis properties
+    # fig.update_xaxes(title_text="DateTime (UTC)", row=1, col=1)
+    # Update yaxis properties
+    fig.update_yaxes(title_text="WSE (m)", row=1, col=1)
+    fig.update_yaxes(title_text="Width (m)", row=2, col=1)
+    # overall figure properties
+    fig.update_xaxes(title_text="DateTime (UTC)")
+    fig.update_layout(height=800, title_text="Reach Level Attributes", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2', transition_duration=500)  # width=1400,  
+    return fig
 
 
 @app.callback(
