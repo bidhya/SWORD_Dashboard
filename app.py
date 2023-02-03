@@ -54,6 +54,32 @@ def get_data(fn):
     return nodes_all
 
 
+# Load the Reach Timeseries and corresponding Metadata metadata for reach
+meta = pd.read_csv("D:/SWOT/SWOT_Viz/metadata/reach_metadata.csv", index_col="col")
+reach_ts = pd.read_csv("D:/SWOT/SWOT_Viz/SWOT_sample_CSVs/SWOTreaches.csv", index_col=0)
+reach_ts = reach_ts.drop(columns="geometry")
+sel_cols = ["reach_id", "time_str", "p_lon", "p_lat", "wse", "width", "slope", "slope2"]  #, "dschg_c"
+reach_ts = reach_ts[sel_cols]
+# Replace fill_values with nan
+for col in sel_cols[3:]:
+    fill_value_mask = reach_ts[col] == int(meta.loc[col]["fill_value"])
+    reach_ts.loc[fill_value_mask, col] = np.nan
+# Width column One high value, outside the valid range. Replace this one as well with nan
+col = "width"
+valid_max_mask = reach_ts[col] >= int(meta.loc[col]["valid_max"])
+reach_ts.loc[valid_max_mask, col] = np.nan
+# int(meta.loc[col]["valid_max"])
+reach_ts["time_str"] = reach_ts.time_str.apply(lambda x: "" if x=="no_data" else x)  # replace with empty string
+reach_ts["time_str"] = reach_ts.time_str.apply(lambda x: f"{x[:-3]}:{x[-3:]}")
+reach_ts["time_str"] = reach_ts.time_str.apply(lambda x: "" if x==":" else x)  # replace with empty string again
+reach_ts["time_str"] = pd.to_datetime(reach_ts.time_str, utc=True)
+reach_ts = reach_ts[~reach_ts.time_str.isna()]  # select only with valid datetime
+# Index by date for plotting
+reach_ts.index = reach_ts.time_str
+reach_ts = reach_ts.drop(columns="time_str")
+reach_list = list(reach_ts.reach_id.unique())
+
+
 # # Dummy csv file for plotting
 # # df = pd.read_csv('https://gist.githubusercontent.com/chriddyp/5d1ea79569ed194d432e56108a04d188/raw/a9f9e8076b837d541398e999dcbac2b2826a81f8/gdp-life-exp-2007.csv')
 out_csv_folder = "data/velocity_csv_utc"
@@ -182,7 +208,7 @@ def plot_nodes(df, reach=None):
     return fig
 
 
-def plot_timeseries(df, reach=None):
+def plot_field_measure(df, reach=None):
     """ New function to plot the reach-level SWOT timeseries data """
     # fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)
     fig = px.line(
@@ -604,6 +630,16 @@ app.layout = html.Div([
         ]
     ),  # end subdiv3
     # BNY
+    html.Div([
+        html.H5("Reach Data"),
+        html.Div([
+            html.Label('Select Reach'),
+            dcc.Dropdown(reach_list, reach_list[0], id="reach_list_dropdown", searchable=True, clearable=False, maxHeight=200),
+        ], style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}),
+        dcc.Graph(id="Reach_TS"),
+        # dcc.Graph(id="Node_TS")  # WSE and Width long profile of NODES for each reach
+    ]),
+
     html.Div(
         [
             html.H5("Timeseries Data"),
@@ -616,8 +652,8 @@ app.layout = html.Div([
                 style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}  # , 'color': 'Gold', 'font-size': 15
             ),
 
-            dcc.Graph(id="TimeSeries"),  # , figure=plot_timeseries(df)
-            dcc.Graph(id="Scatter")  # , figure=plot_scatter(df)        
+            dcc.Graph(id="Field_Measure_ts"),  # , figure=plot_field_measure(df)
+            dcc.Graph(id="Field_Measure_Scatter")  # , figure=plot_scatter(df)        
         ]),
     html.Div(children=[
         html.Div(
@@ -895,10 +931,19 @@ def update_graph(term, n_clicks):
         n_clicks = None
         return fig, n_clicks
 
+@app.callback(
+    Output("Reach_TS", "figure"),
+    Input("reach_list_dropdown", "value")
+)
+def plot_reach(reach_id):
+    reach_ts_sel = reach_ts[reach_ts.reach_id == reach_id]
+    wse_fig = px.line(reach_ts_sel["wse"])
+    return wse_fig
+
 
 @app.callback(
-    Output("TimeSeries", "figure"),
-    Output("Scatter", "figure"),
+    Output("Field_Measure_ts", "figure"),
+    Output("Field_Measure_Scatter", "figure"),
     Input("gage_list", "value"))
 def update_ts_graph(gage):
     logging.info(gage)
@@ -909,7 +954,7 @@ def update_ts_graph(gage):
         df = get_usgs_data.read_usgs_field_data(gage)
         df.to_csv(os.path.join(out_csv_folder, f'{gage}.csv'), index=True, header=True)  # index_label='measurement_dt or utc_dt'
     if len(df) > 0:
-        fig_ts = plot_timeseries(df)
+        fig_ts = plot_field_measure(df)
         fig_scatter = plot_scatter(df)
         return fig_ts, fig_scatter
 
