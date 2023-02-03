@@ -55,8 +55,8 @@ def get_data(fn):
 
 
 # Load the Reach Timeseries and corresponding Metadata metadata for reach
-meta = pd.read_csv("D:/SWOT/SWOT_Viz/metadata/reach_metadata.csv", index_col="col")
-reach_ts = pd.read_csv("D:/SWOT/SWOT_Viz/SWOT_sample_CSVs/SWOTreaches.csv", index_col=0)
+meta = pd.read_csv("data/metadata/reach_metadata.csv", index_col="col")
+reach_ts = pd.read_csv("data/SWOT_sample_CSVs/SWOTreaches.csv", index_col=0)
 reach_ts = reach_ts.drop(columns="geometry")
 sel_cols = ["reach_id", "time_str", "p_lon", "p_lat", "wse", "width", "slope", "slope2"]  #, "dschg_c"
 reach_ts = reach_ts[sel_cols]
@@ -80,7 +80,7 @@ reach_ts = reach_ts.drop(columns="time_str")
 reach_list = list(reach_ts.reach_id.unique())
 
 # Read Node Timeseries data
-node_ts = pd.read_csv("D:/SWOT/SWOT_Viz/SWOT_sample_CSVs/SWOTnodes.csv", index_col=0)
+node_ts = pd.read_csv("data/SWOT_sample_CSVs/SWOTnodes.csv", index_col=0)
 # we need WSE and Width
 node_cols = ["reach_id", "time_str", "wse", "width"]
 node_ts = node_ts[node_cols]
