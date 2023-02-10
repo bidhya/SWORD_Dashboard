@@ -911,6 +911,9 @@ def update_graph(term, n_clicks):
 def plot_reach(reach_id):
     reach_ts_sel = reach_ts[reach_ts.reach_id == reach_id]
     node_ts_sel = node_ts[node_ts.reach_id == reach_id]
+    # Get unique list of dates (without time)
+
+    # Select one data to make plots
     # Make plot directly here rather than calling another function
     fig = make_subplots(rows=2, cols=2)
     fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="lines+markers", name="wse"), row=1, col=1)
