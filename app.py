@@ -18,7 +18,6 @@ import plotly.express as px
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 load_figure_template("cerulean")
-
 import logging
 from utils import get_usgs_data
 
@@ -58,7 +57,8 @@ def get_data(fn):
 meta = pd.read_csv("data/metadata/reach_metadata.csv", index_col="col")
 reach_ts = pd.read_csv("data/SWOT_sample_CSVs/SWOTreaches.csv", index_col=0)
 reach_ts = reach_ts.drop(columns="geometry")
-sel_cols = ["reach_id", "time_str", "p_lon", "p_lat", "wse", "width", "slope", "slope2"]  #, "dschg_c"
+# sel_cols = ["reach_id", "time_str", "p_lon", "p_lat", "wse", "width", "slope", "slope2"]  #, "dschg_c"
+sel_cols = ["reach_id", "time", "p_lon", "p_lat", "wse", "width", "slope", "slope2"]  # , "dschg_c"
 reach_ts = reach_ts[sel_cols]
 # Replace fill_values with nan
 for col in sel_cols[3:]:
@@ -72,14 +72,22 @@ col = "width"
 valid_max_mask = reach_ts[col] >= int(meta.loc[col]["valid_max"])
 reach_ts.loc[valid_max_mask, col] = np.nan
 # int(meta.loc[col]["valid_max"])
-reach_ts["time_str"] = reach_ts.time_str.apply(lambda x: "" if x=="no_data" else x)  # replace with empty string
-reach_ts["time_str"] = reach_ts.time_str.apply(lambda x: f"{x[:-3]}:{x[-3:]}")
-reach_ts["time_str"] = reach_ts.time_str.apply(lambda x: "" if x==":" else x)  # replace with empty string again
-reach_ts["time_str"] = pd.to_datetime(reach_ts.time_str, utc=True)
-reach_ts = reach_ts[~reach_ts.time_str.isna()]  # select only with valid datetime
-# Index by date for plotting
-reach_ts.index = reach_ts.time_str
-reach_ts = reach_ts.drop(columns="time_str")
+# # OLD: for time_str field  
+# reach_ts["time_str"] = reach_ts.time_str.apply(lambda x: "" if x=="no_data" else x)  # replace with empty string
+# reach_ts["time_str"] = reach_ts.time_str.apply(lambda x: f"{x[:-3]}:{x[-3:]}")
+# reach_ts["time_str"] = reach_ts.time_str.apply(lambda x: "" if x==":" else x)  # replace with empty string again
+# reach_ts["time_str"] = pd.to_datetime(reach_ts.time_str, utc=True)
+# reach_ts = reach_ts[~reach_ts.time_str.isna()]  # select only with valid datetime
+# # Index by date for plotting
+# reach_ts.index = reach_ts.time_str
+# reach_ts = reach_ts.drop(columns="time_str")
+# reach_list = list(reach_ts.reach_id.unique())
+reach_ts["time"] = reach_ts.time.apply(lambda x: None if x==-999999999999.0 else x)  # replace nodata values with Nan
+reach_ts["time"] = reach_ts.time.apply(lambda x: pd.Timedelta(x, unit="s")) + pd.to_datetime("2000/01/01")
+reach_ts["time"] = reach_ts.time.dt.tz_localize("UTC")
+reach_ts = reach_ts[~reach_ts["time"].isna()]  # select only with valid datetime; TODO: think if its better to keep missing dates observations as well
+reach_ts.index = reach_ts["time"]
+reach_ts = reach_ts.drop(columns="time")
 reach_list = list(reach_ts.reach_id.unique())
 
 # Read Node Timeseries data
