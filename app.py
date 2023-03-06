@@ -55,7 +55,9 @@ def get_data(fn):
 
 # Load the Reach Timeseries and corresponding Metadata metadata for reach
 meta = pd.read_csv("data/metadata/reach_metadata.csv", index_col="col")
-reach_ts = pd.read_csv("data/SWOT_sample_CSVs/SWOTreaches.csv", index_col=0)
+# reach_ts = pd.read_csv("data/SWOT_sample_CSVs/SWOTreaches.csv", index_col=0)  # from Cassie
+# New Ohio Sample data processed by Merrit [Mar 03, 2023]
+reach_ts = pd.read_csv("data/SWOT_Ohio_sample/SWOT_Ohio_reaches.csv", index_col=0)
 reach_ts = reach_ts.drop(columns="geometry")
 # sel_cols = ["reach_id", "time_str", "p_lon", "p_lat", "wse", "width", "slope", "slope2"]  #, "dschg_c"
 sel_cols = ["reach_id", "time", "p_lon", "p_lat", "wse", "width", "slope", "slope2"]  # , "dschg_c"
@@ -90,27 +92,27 @@ reach_ts.index = reach_ts["time"]
 reach_ts = reach_ts.drop(columns="time")
 reach_list = list(reach_ts.reach_id.unique())
 
-# Read Node Timeseries data
-node_ts = pd.read_csv("data/SWOT_sample_CSVs/SWOTnodes.csv", index_col=0)
-# we need WSE and Width
-node_cols = ["reach_id", "time_str", "node_id", "node_dist", "xtrk_dist", "p_dist_out", "wse", "width"]
-node_ts = node_ts[node_cols]
-# Replace fill_values with nan
-for col in node_cols[-2:]:
-    fill_value_mask = node_ts[col] <= int(meta.loc[col]["fill_value"])
-    node_ts.loc[fill_value_mask, col] = np.nan
-# Width column One high value, outside the valid range. Replace this one as well with nan
-col = "width"
-valid_max_mask = node_ts[col] >= int(meta.loc[col]["valid_max"])
-node_ts.loc[valid_max_mask, col] = np.nan
-node_ts["time_str"] = node_ts.time_str.apply(lambda x: "" if x=="no_data" else x)  # replace with empty string
-node_ts["time_str"] = node_ts.time_str.apply(lambda x: f"{x[:-3]}:{x[-3:]}")
-node_ts["time_str"] = node_ts.time_str.apply(lambda x: "" if x==":" else x)  # replace with empty string again
-node_ts["time_str"] = pd.to_datetime(node_ts.time_str, utc=True)
-node_ts = node_ts[~node_ts.time_str.isna()]  # select only with valid datetime
-# Index by date for plotting
-node_ts.index = node_ts.time_str
-node_ts = node_ts.drop(columns="time_str")
+# # Read Node Timeseries data: Uncomment for node-level data
+# node_ts = pd.read_csv("data/SWOT_sample_CSVs/SWOTnodes.csv", index_col=0)
+# # we need WSE and Width
+# node_cols = ["reach_id", "time_str", "node_id", "node_dist", "xtrk_dist", "p_dist_out", "wse", "width"]
+# node_ts = node_ts[node_cols]
+# # Replace fill_values with nan
+# for col in node_cols[-2:]:
+#     fill_value_mask = node_ts[col] <= int(meta.loc[col]["fill_value"])
+#     node_ts.loc[fill_value_mask, col] = np.nan
+# # Width column One high value, outside the valid range. Replace this one as well with nan
+# col = "width"
+# valid_max_mask = node_ts[col] >= int(meta.loc[col]["valid_max"])
+# node_ts.loc[valid_max_mask, col] = np.nan
+# node_ts["time_str"] = node_ts.time_str.apply(lambda x: "" if x=="no_data" else x)  # replace with empty string
+# node_ts["time_str"] = node_ts.time_str.apply(lambda x: f"{x[:-3]}:{x[-3:]}")
+# node_ts["time_str"] = node_ts.time_str.apply(lambda x: "" if x==":" else x)  # replace with empty string again
+# node_ts["time_str"] = pd.to_datetime(node_ts.time_str, utc=True)
+# node_ts = node_ts[~node_ts.time_str.isna()]  # select only with valid datetime
+# # Index by date for plotting
+# node_ts.index = node_ts.time_str
+# node_ts = node_ts.drop(columns="time_str")
 
 # # Dummy csv file for plotting
 # # df = pd.read_csv('https://gist.githubusercontent.com/chriddyp/5d1ea79569ed194d432e56108a04d188/raw/a9f9e8076b837d541398e999dcbac2b2826a81f8/gdp-life-exp-2007.csv')
@@ -918,7 +920,8 @@ def update_graph(term, n_clicks):
 )
 def plot_reach(reach_id):
     reach_ts_sel = reach_ts[reach_ts.reach_id == reach_id]
-    node_ts_sel = node_ts[node_ts.reach_id == reach_id]
+    reach_ts_sel = reach_ts_sel.sort_index()  # was required for ohio data
+    # node_ts_sel = node_ts[node_ts.reach_id == reach_id]  # uncomment for node-level data
     # Get unique list of dates (without time)
 
     # Select one data to make plots

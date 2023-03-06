@@ -1,6 +1,12 @@
 # Running notes on changes made after forking 
 Reverse Chronological Order  
 
+## Mar 03, 2024
+ohio1 branch --> merged to main
+- replace "time_str" field with "time" because Merrit used this field  
+- Load, parse and plot Ohio River data  
+- sort index (time) before plotting  
+
 ## Feb 03, 2023
 Merged v0_4_sample_ts branch to main
 - plot reach level sample timeseries SWOT data
