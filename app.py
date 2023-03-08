@@ -91,6 +91,7 @@ reach_ts = reach_ts[~reach_ts["time"].isna()]  # select only with valid datetime
 reach_ts.index = reach_ts["time"]
 reach_ts = reach_ts.drop(columns="time")
 reach_list = list(reach_ts.reach_id.unique())
+logging.info(len(reach_list))
 
 # # Read Node Timeseries data: Uncomment for node-level data
 # node_ts = pd.read_csv("data/SWOT_sample_CSVs/SWOTnodes.csv", index_col=0)
@@ -117,8 +118,7 @@ reach_list = list(reach_ts.reach_id.unique())
 # # Dummy csv file for plotting
 # # df = pd.read_csv('https://gist.githubusercontent.com/chriddyp/5d1ea79569ed194d432e56108a04d188/raw/a9f9e8076b837d541398e999dcbac2b2826a81f8/gdp-life-exp-2007.csv')
 out_csv_folder = "data/usgs/velocity_csv_utc"
-# TODO: Create this output folder in this script so site can be deployed from scratch
-os.makedirs(out_csv_folder, exist_ok=True)
+os.makedirs(out_csv_folder, exist_ok=True)  # NEW: So site can be deployed from scratch
 # # gages = os.listdir(out_csv_folder)
 # # gages = [f.split(".csv")[0] for f in gages]
 # # gages = [f[2:] for f in gages if len(f) == 10]
@@ -128,12 +128,19 @@ os.makedirs(out_csv_folder, exist_ok=True)
 
 # Read usgs gages
 df = pd.read_csv("data/reach_gage_mapping.csv", dtype=str)
-df.index = df.reach_id
 df["basin2"] = df.reach_id.apply(lambda x: x[:2])
 df["basin4"] = df.reach_id.apply(lambda x: x[:4])
-gages = sorted(list(df[df.basin2=="73"]["STAID"]))
-# Remove problematic gages with nodata
-gages.remove("01020000")
+# gages = sorted(list(df[df.basin2 == "73"]["STAID"]))
+# gages.remove("01020000")  # Remove problematic gages with nodata
+# New for Ohio Data
+df["reach_id"] = df.reach_id.astype(np.int64)
+df.index = df.reach_id
+reach_list = list(reach_ts.reach_id.unique())
+ohio_reach_with_usgs_gage = list(set(df.reach_id).intersection(set(reach_list)))
+df = df.loc[ohio_reach_with_usgs_gage]
+gages = sorted(list(df.STAID))
+reach_list = sorted(list(df.reach_id))  # only a subset of 33 reaches with corresponding usgs gage mapped
+logging.info("Number of reaches: ", len(reach_list))
 del df 
 # # Or get a subset of gages directly populated inside dropdown box
 # gages = ['01131500', '01205500', '01315000', '01371500', '01502632', '01563200', '02104220', '02128000', '02130900', 
@@ -966,6 +973,9 @@ def update_ts_graph(gage):
         # Download file
         df = get_usgs_data.read_usgs_field_data(gage)
         df.to_csv(os.path.join(out_csv_folder, f'{gage}.csv'), index=True, header=True)  # index_label='measurement_dt or utc_dt'
+        # Get IDA (realtime) discharge and stage data
+        ida_df = get_usgs_data.read_usgs_ida(gage)
+        ida_df.to_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), index=True, header=True)
     if len(df) > 0:
         fig_ts = plot_field_measure(df)
         fig_scatter = plot_scatter(df)

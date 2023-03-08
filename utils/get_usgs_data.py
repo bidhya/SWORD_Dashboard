@@ -12,45 +12,50 @@ def read_usgs_ida(gage):
         Instaneous data archive  
     """
     base_url = 'http://waterservices.usgs.gov/nwis/{data_type}/?format={output_format}&sites={sites}&startDT={startDT}&parameterCd={parameter}'
-    ida_url = base_url.format(data_type='iv', output_format='rdb', sites=gage, startDT='2021-10-01T00:00Z', parameter='00060,00065')
-    df = pd.read_csv(ida_url, comment='#', sep='\t') #newer but not tested here
-    df = df.drop(0)  # first row after headers is fieldsize specification such as 5s	15s	6s..
-    df = df.drop(['agency_cd', 'site_no'], axis=1)
-    if "EST" or "EDT" in df.tz_cd.unique():
-        tz = pytz.timezone('US/Eastern')
-    elif "CST" or "CDT" in df.tz_cd.unique():
-        tz = pytz.timezone('US/Central')
-    elif "MST" or "MDT" in df.tz_cd.unique():
-        tz = pytz.timezone('US/Mountain')
-    elif "PST" or "PDT" in df.tz_cd.unique():
-        tz = pytz.timezone('US/Pacific')
-    elif "AKST" or "AKDT" in df.tz_cd.unique():
-        tz = pytz.timezone('US/Alaska')
-    elif "HST" or "HDT" in df.tz_cd.unique():
-        tz = pytz.timezone('US/Hawaii')
-    else:
-        print("Unknown timezone")
-    df["datetime"] = pd.to_datetime(df.datetime)
-    # df.datetime.dt.tz_localize("US/Eastern", ambiguous='infer')
-    df["datetime"] = df.datetime.apply(lambda x: tz.localize(x))  # seems like daytime savings is automatically resolved
-    df["datetime"] = df.datetime.dt.tz_convert("UTC")
-    df.index = df.datetime
-    df = df.drop(['datetime', 'tz_cd'], axis=1)
-    df.columns = ["discharge", "discharge_cd", "stage", "stage_cd"]
-    df = df[["discharge", "stage"]]
-    df["discharge"] = df.discharge.astype("float")
-    df["stage"] = df.stage.astype("float")
-    # df = df.dropna()  # This may be required
-    return df
+    ida_url = base_url.format(data_type='iv', output_format='rdb', sites=gage, startDT='2020-10-01T00:00Z', parameter='00060,00065')
+    try:
+        df = pd.read_csv(ida_url, comment='#', sep='\t', low_memory=False) #newer but not tested here
+        # Columns (1,4,6) have mixed types. Specify dtype option on import or set low_memory=False
+        df = df.drop(0)  # first row after headers is fieldsize specification such as 5s	15s	6s..
+        df = df.drop(['agency_cd', 'site_no'], axis=1)
+        if "EST" or "EDT" in df.tz_cd.unique():
+            tz = pytz.timezone('US/Eastern')
+        elif "CST" or "CDT" in df.tz_cd.unique():
+            tz = pytz.timezone('US/Central')
+        elif "MST" or "MDT" in df.tz_cd.unique():
+            tz = pytz.timezone('US/Mountain')
+        elif "PST" or "PDT" in df.tz_cd.unique():
+            tz = pytz.timezone('US/Pacific')
+        elif "AKST" or "AKDT" in df.tz_cd.unique():
+            tz = pytz.timezone('US/Alaska')
+        elif "HST" or "HDT" in df.tz_cd.unique():
+            tz = pytz.timezone('US/Hawaii')
+        else:
+            print("Unknown timezone")
+        df["datetime"] = pd.to_datetime(df.datetime)
+        # df.datetime.dt.tz_localize("US/Eastern", ambiguous='infer')
+        df["datetime"] = df.datetime.apply(lambda x: tz.localize(x))  # seems like daytime savings is automatically resolved
+        df["datetime"] = df.datetime.dt.tz_convert("UTC")
+        df.index = df.datetime
+        df = df.drop(['datetime', 'tz_cd'], axis=1)
+        df.columns = ["discharge", "discharge_cd", "stage", "stage_cd"]
+        df = df[["discharge", "stage"]]
+        df["discharge"] = df.discharge.astype("float")
+        df["stage"] = df.stage.astype("float")
+        # df = df.dropna()  # This may be required
+        return df
+    except:
+        logging.info(f"IDA: Error downloading/processing {gage}")  # mostly empty due to no field data; just html downloaded by script
+        logging.info(f"Directly check this url: {ida_url}")
 
 
 def read_usgs_field_data(gage):
     """ gage: stationID of USGS gage
     """
     base_url = "http://waterdata.usgs.gov/nwis/measurements?site_no={}&agency_cd=USGS&format=rdb_expanded"
-    ida_url = base_url.format(gage)
+    field_measure_url = base_url.format(gage)
     try:
-        df = pd.read_csv(ida_url, comment='#', sep='\t') #newer but not tested here
+        df = pd.read_csv(field_measure_url, comment='#', sep='\t') #newer but not tested here
         ''' #To guard again error due to empty dataframe (may not be necessary because now we have try statement)
         if len(df) == 0:
             ## To protect against data frame that are empty, ie col names present but no data (row)
@@ -95,4 +100,4 @@ def read_usgs_field_data(gage):
         return df
     except:
         logging.info(f"Error downloading/processing {gage}")  # mostly empty due to no field data; just html downloaded by script
-        logging.info(f"Directly check this url: {ida_url}")
+        logging.info(f"Directly check this url: {field_measure_url}")
