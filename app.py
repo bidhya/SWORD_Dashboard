@@ -116,7 +116,9 @@ reach_list = list(reach_ts.reach_id.unique())
 
 # # Dummy csv file for plotting
 # # df = pd.read_csv('https://gist.githubusercontent.com/chriddyp/5d1ea79569ed194d432e56108a04d188/raw/a9f9e8076b837d541398e999dcbac2b2826a81f8/gdp-life-exp-2007.csv')
-out_csv_folder = "data/velocity_csv_utc"
+out_csv_folder = "data/usgs/velocity_csv_utc"
+# TODO: Create this output folder in this script so site can be deployed from scratch
+os.makedirs(out_csv_folder, exist_ok=True)
 # # gages = os.listdir(out_csv_folder)
 # # gages = [f.split(".csv")[0] for f in gages]
 # # gages = [f[2:] for f in gages if len(f) == 10]
