@@ -1,3 +1,5 @@
+import os
+import requests
 import numpy as np
 import pytz
 import pandas as pd
@@ -5,45 +7,71 @@ import logging
 
 # Only to download RDB files (new: oct 25, 2019)
 # Don't use JSON files for field data as they are not complete columns
+out_csv_folder = "data/usgs/velocity_csv_utc"
+# os.makedirs(out_csv_folder, exist_ok=True)  # NEW: So site can be deployed from scratch
 
 
 def read_usgs_ida(gage):
     """ gage: stationID of USGS gage
         Instaneous data archive  
+        TODO: 
+            Check this gage 03399800. It has extra two columns for backwater effect
+                USGS 03399800 OHIO RIVER AT SMITHLAND DAM, SMITHLAND, KY
     """
-    base_url = 'http://waterservices.usgs.gov/nwis/{data_type}/?format={output_format}&sites={sites}&startDT={startDT}&parameterCd={parameter}'
-    ida_url = base_url.format(data_type='iv', output_format='rdb', sites=gage, startDT='2020-10-01T00:00Z', parameter='00060,00065')
+    if os.path.exists(os.path.join(out_csv_folder, f'{gage}_ida.csv')):
+        df = pd.read_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), parse_dates=True, infer_datetime_format=True)
+        return df
+    download_folder = "data/usgs/velocity_csv_utc/downloads"
+    os.makedirs(download_folder, exist_ok=True)
+    base_url = 'http://waterservices.usgs.gov/nwis/{data_type}/?format={output_format}&sites={sites}&startDT={startDT}&endDT={endDT}&parameterCd={parameter}'
+    ida_url = base_url.format(data_type='iv', output_format='rdb', sites=gage, startDT='2010-10-01T00:00Z', endDT='2011-10-01T00:00Z', parameter='00060,00065')
     try:
-        df = pd.read_csv(ida_url, comment='#', sep='\t', low_memory=False) #newer but not tested here
+        outfile = f'{download_folder}/{gage}.rdb'
+        # Download the discharge from internet by calling this function
+        if not os.path.isfile(outfile):
+            r = requests.get(ida_url)
+            if r.status_code == 200:
+                with open(outfile, "wb") as code:
+                    code.write(r.content)
+            else:
+                logging.error(f'\t{gage} \t Request code {r.status_code}')
+
+        # df = pd.read_csv(ida_url, comment='#', sep='\t', low_memory=False)  # problem when data is large
+        df = pd.read_csv(outfile, comment='#', sep='\t', low_memory=False)  # from saved rdb file
+        # Message on nwis site: #  No sites found matching all criteria
         # Columns (1,4,6) have mixed types. Specify dtype option on import or set low_memory=False
         df = df.drop(0)  # first row after headers is fieldsize specification such as 5s	15s	6s..
-        df = df.drop(['agency_cd', 'site_no'], axis=1)
-        if "EST" or "EDT" in df.tz_cd.unique():
-            tz = pytz.timezone('US/Eastern')
-        elif "CST" or "CDT" in df.tz_cd.unique():
-            tz = pytz.timezone('US/Central')
-        elif "MST" or "MDT" in df.tz_cd.unique():
-            tz = pytz.timezone('US/Mountain')
-        elif "PST" or "PDT" in df.tz_cd.unique():
-            tz = pytz.timezone('US/Pacific')
-        elif "AKST" or "AKDT" in df.tz_cd.unique():
-            tz = pytz.timezone('US/Alaska')
-        elif "HST" or "HDT" in df.tz_cd.unique():
-            tz = pytz.timezone('US/Hawaii')
+        if len(df) > 1:
+            df = df.drop(['agency_cd', 'site_no'], axis=1)
+            if "EST" or "EDT" in df.tz_cd.unique():
+                tz = pytz.timezone('US/Eastern')
+            elif "CST" or "CDT" in df.tz_cd.unique():
+                tz = pytz.timezone('US/Central')
+            elif "MST" or "MDT" in df.tz_cd.unique():
+                tz = pytz.timezone('US/Mountain')
+            elif "PST" or "PDT" in df.tz_cd.unique():
+                tz = pytz.timezone('US/Pacific')
+            elif "AKST" or "AKDT" in df.tz_cd.unique():
+                tz = pytz.timezone('US/Alaska')
+            elif "HST" or "HDT" in df.tz_cd.unique():
+                tz = pytz.timezone('US/Hawaii')
+            else:
+                print("Unknown timezone")
+            df["datetime"] = pd.to_datetime(df.datetime)
+            # df.datetime.dt.tz_localize("US/Eastern", ambiguous='infer')
+            df["datetime"] = df.datetime.apply(lambda x: tz.localize(x))  # seems like daytime savings is automatically resolved
+            df["datetime"] = df.datetime.dt.tz_convert("UTC")
+            df.index = df.datetime
+            df = df.drop(['datetime', 'tz_cd'], axis=1)
+            df.columns = ["discharge", "discharge_cd", "stage", "stage_cd"]
+            df = df[["discharge", "stage"]]
+            df["discharge"] = df.discharge.astype("float")
+            df["stage"] = df.stage.astype("float")
+            # df = df.dropna()  # This may be required
+            df.to_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), index=True, header=True)
+            return df
         else:
-            print("Unknown timezone")
-        df["datetime"] = pd.to_datetime(df.datetime)
-        # df.datetime.dt.tz_localize("US/Eastern", ambiguous='infer')
-        df["datetime"] = df.datetime.apply(lambda x: tz.localize(x))  # seems like daytime savings is automatically resolved
-        df["datetime"] = df.datetime.dt.tz_convert("UTC")
-        df.index = df.datetime
-        df = df.drop(['datetime', 'tz_cd'], axis=1)
-        df.columns = ["discharge", "discharge_cd", "stage", "stage_cd"]
-        df = df[["discharge", "stage"]]
-        df["discharge"] = df.discharge.astype("float")
-        df["stage"] = df.stage.astype("float")
-        # df = df.dropna()  # This may be required
-        return df
+            return None
     except:
         logging.info(f"IDA: Error downloading/processing {gage}")  # mostly empty due to no field data; just html downloaded by script
         logging.info(f"Directly check this url: {ida_url}")
@@ -52,6 +80,10 @@ def read_usgs_ida(gage):
 def read_usgs_field_data(gage):
     """ gage: stationID of USGS gage
     """
+    if os.path.exists(os.path.join(out_csv_folder, f"{gage}.csv")):
+        df = pd.read_csv(os.path.join(out_csv_folder, f"{gage}.csv"), index_col='measurement_dt', parse_dates=True, infer_datetime_format=True)
+        return df
+
     base_url = "http://waterdata.usgs.gov/nwis/measurements?site_no={}&agency_cd=USGS&format=rdb_expanded"
     field_measure_url = base_url.format(gage)
     try:
@@ -92,10 +124,11 @@ def read_usgs_field_data(gage):
         width_flag = df['chan_width'] > 0
         area_flag = df['chan_area'] > 0
         df = df[velocity_flag & gage_height_flag & cfs_flag & area_flag & width_flag]
-        df = df['1990':]
+        df = df['2010':]
         # Drop the duplicates (ie, the ones measured the same time)
         # Seems like these measurements are taken on different branches of streams
         df = df.loc[df.index.drop_duplicates(keep=False)]
+        df.to_csv(os.path.join(out_csv_folder, f'{gage}.csv'), index=True, header=True)  # index_label='measurement_dt or utc_dt'
         logging.info(f"{gage} <--Downloading  ")
         return df
     except:

@@ -91,7 +91,7 @@ reach_ts = reach_ts[~reach_ts["time"].isna()]  # select only with valid datetime
 reach_ts.index = reach_ts["time"]
 reach_ts = reach_ts.drop(columns="time")
 reach_list = list(reach_ts.reach_id.unique())
-logging.info(len(reach_list))
+logging.info(f"Number of reaches: {len(reach_list)}")
 
 # # Read Node Timeseries data: Uncomment for node-level data
 # node_ts = pd.read_csv("data/SWOT_sample_CSVs/SWOTnodes.csv", index_col=0)
@@ -140,7 +140,7 @@ ohio_reach_with_usgs_gage = list(set(df.reach_id).intersection(set(reach_list)))
 df = df.loc[ohio_reach_with_usgs_gage]
 gages = sorted(list(df.STAID))
 reach_list = sorted(list(df.reach_id))  # only a subset of 33 reaches with corresponding usgs gage mapped
-logging.info("Number of reaches: ", len(reach_list))
+logging.info(f"Number of reaches: {len(reach_list)}")
 del df 
 # # Or get a subset of gages directly populated inside dropdown box
 # gages = ['01131500', '01205500', '01315000', '01371500', '01502632', '01563200', '02104220', '02128000', '02130900', 
@@ -967,18 +967,27 @@ def plot_reach(reach_id):
     Input("gage_list", "value"))
 def update_ts_graph(gage):
     logging.info(gage)
-    if os.path.exists(os.path.join(out_csv_folder, f"{gage}.csv")):
-        df = pd.read_csv(os.path.join(out_csv_folder, f"{gage}.csv"), index_col='measurement_dt', parse_dates=True, infer_datetime_format=True)
-    else:
-        # Download file
-        df = get_usgs_data.read_usgs_field_data(gage)
-        df.to_csv(os.path.join(out_csv_folder, f'{gage}.csv'), index=True, header=True)  # index_label='measurement_dt or utc_dt'
-        # Get IDA (realtime) discharge and stage data
-        ida_df = get_usgs_data.read_usgs_ida(gage)
-        ida_df.to_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), index=True, header=True)
-    if len(df) > 0:
-        fig_ts = plot_field_measure(df)
-        fig_scatter = plot_scatter(df)
+    field_measure_df = get_usgs_data.read_usgs_field_data(gage)
+    # if os.path.exists(os.path.join(out_csv_folder, f"{gage}.csv")):
+    #     df = pd.read_csv(os.path.join(out_csv_folder, f"{gage}.csv"), index_col='measurement_dt', parse_dates=True, infer_datetime_format=True)
+    # else:
+    #     # Download file field measure data
+    #     df = get_usgs_data.read_usgs_field_data(gage)
+    #     df.to_csv(os.path.join(out_csv_folder, f'{gage}.csv'), index=True, header=True)  # index_label='measurement_dt or utc_dt'
+
+    # For IDA Data
+    ida_df = get_usgs_data.read_usgs_ida(gage)
+    logging.info(f"Type of ida_df: {type(ida_df)}")
+    # if os.path.exists(os.path.join(out_csv_folder, f'{gage}_ida.csv')):
+    #     ida_df = pd.read_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), parse_dates=True, infer_datetime_format=True)
+    # else:
+    #     # Download IDA (realtime) discharge and stage data
+    #     ida_df = get_usgs_data.read_usgs_ida(gage)
+    #     ida_df.to_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), index=True, header=True)
+    # To Plot Figures
+    if len(field_measure_df) > 0:
+        fig_ts = plot_field_measure(field_measure_df)
+        fig_scatter = plot_scatter(field_measure_df)
         return fig_ts, fig_scatter
 
 
