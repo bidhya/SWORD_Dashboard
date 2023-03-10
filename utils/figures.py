@@ -6,6 +6,56 @@ import plotly.express as px
 # import logging
 
 
+def plot_nodes(df, reach=None):
+    # Function for plotting node level data.
+    if reach is None:
+        rch = 81247100041  # default reach
+    else:
+        rch = reach
+    node_reaches = df.loc[df['reach_id'] == rch]
+
+    # add base plots
+    fig = make_subplots(rows=1, cols=2)
+    fig.add_trace(
+        go.Scatter(
+            x=node_reaches['dist_out']/1000,
+            y=node_reaches['wse'],
+            mode='lines+markers'),
+        row=1, col=1
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=node_reaches['dist_out']/1000,
+            y=node_reaches['width'],
+            mode='markers'),
+        row=1, col=2
+    )
+    # Update xaxis properties
+    fig.update_xaxes(
+        title_text="Distance from Outlet (km)",
+        row=1, col=1)
+    fig.update_xaxes(
+        title_text="Distance from Outlet (km)",
+        row=1, col=2)
+    # Update yaxis properties
+    fig.update_yaxes(
+        title_text="Water Surface Elevation (m)",
+        row=1, col=1)
+    fig.update_yaxes(
+        title_text="Width (m)",
+        row=1, col=2)
+    # overall figure properties
+    fig.update_layout(
+        height=400, #width=1400,
+        title_text="Reach "+str(rch)+": Node Level Attributes",
+        title_x=0.5,
+        showlegend=False,
+        plot_bgcolor='#dce0e2', # 'whitesmoke'
+        transition_duration=500
+    )
+    return fig
+
+
 def plot_field_measure(df, reach=None):
     """ New function to plot the reach-level SWOT timeseries data """
     # fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)

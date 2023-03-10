@@ -124,7 +124,7 @@ def read_usgs_field_data(gage):
         width_flag = df['chan_width'] > 0
         area_flag = df['chan_area'] > 0
         df = df[velocity_flag & gage_height_flag & cfs_flag & area_flag & width_flag]
-        df = df['2010':]
+        df = df['2001':]
         # Drop the duplicates (ie, the ones measured the same time)
         # Seems like these measurements are taken on different branches of streams
         df = df.loc[df.index.drop_duplicates(keep=False)]
