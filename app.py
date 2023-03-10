@@ -19,8 +19,7 @@ import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 load_figure_template("cerulean")
 import logging
-from utils import get_usgs_data
-
+from utils import get_usgs_data, figures
 logging.basicConfig(filename="mylogs.log", level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 
 #################################################################################################
@@ -91,7 +90,7 @@ reach_ts = reach_ts[~reach_ts["time"].isna()]  # select only with valid datetime
 reach_ts.index = reach_ts["time"]
 reach_ts = reach_ts.drop(columns="time")
 reach_list = list(reach_ts.reach_id.unique())
-logging.info(f"Number of reaches: {len(reach_list)}")
+# logging.info(f"Number of reaches: {len(reach_list)}")
 
 # # Read Node Timeseries data: Uncomment for node-level data
 # node_ts = pd.read_csv("data/SWOT_sample_CSVs/SWOTnodes.csv", index_col=0)
@@ -199,79 +198,79 @@ def plot_nodes(df, reach=None):
     return fig
 
 
-def plot_field_measure(df, reach=None):
-    """ New function to plot the reach-level SWOT timeseries data """
-    # fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)
-    fig = px.line(
-        df,
-        x=df.index,
-        y="gage_height_va",
-        markers=True,
-        title="Water Surface Elevation (feet)",        
-    )
-    fig.update_xaxes(title_text="Date")
-    fig.update_yaxes(title_text="WSE (feet)")
-    fig.update_layout(
-        height=480, #width=1400,
-        title_text="WSE from USGS Gage Field Measurements",
-        title_x=0.5,
-        showlegend=False,
-        plot_bgcolor='#dce0e2',  # 'whitesmoke'
-        transition_duration=500  # BNY
-    )
-    return fig
+# def plot_field_measure(df, reach=None):
+#     """ New function to plot the reach-level SWOT timeseries data """
+#     # fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)
+#     fig = px.line(
+#         df,
+#         x=df.index,
+#         y="gage_height_va",
+#         markers=True,
+#         title="Water Surface Elevation (feet)",        
+#     )
+#     fig.update_xaxes(title_text="Date")
+#     fig.update_yaxes(title_text="WSE (feet)")
+#     fig.update_layout(
+#         height=480, #width=1400,
+#         title_text="WSE from USGS Gage Field Measurements",
+#         title_x=0.5,
+#         showlegend=False,
+#         plot_bgcolor='#dce0e2',  # 'whitesmoke'
+#         transition_duration=500  # BNY
+#     )
+#     return fig
 
 
-def plot_scatter(df, reach=None):
-    """ New function to plot the reach-level SWOT timeseries data """
-    # fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)
-    fig = make_subplots(rows=2, cols=2)
-    fig.add_trace(
-        go.Scatter(
-            x=df.gage_height_va,
-            y=df.discharge_va,
-            mode="markers", text=df.index.date),
-        row=1, col=1)
+# def plot_scatter(df, reach=None):
+#     """ New function to plot the reach-level SWOT timeseries data """
+#     # fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)
+#     fig = make_subplots(rows=2, cols=2)
+#     fig.add_trace(
+#         go.Scatter(
+#             x=df.gage_height_va,
+#             y=df.discharge_va,
+#             mode="markers", text=df.index.date),
+#         row=1, col=1)
 
-    fig.add_trace(
-        go.Scatter(
-            x=df.gage_height_va,
-            y=df.chan_width,
-            mode="markers", text=df.index.date),
-        row=1, col=2)
+#     fig.add_trace(
+#         go.Scatter(
+#             x=df.gage_height_va,
+#             y=df.chan_width,
+#             mode="markers", text=df.index.date),
+#         row=1, col=2)
 
-    fig.add_trace(
-        go.Scatter(
-            x=df.gage_height_va,
-            y=df.chan_area,
-            mode="markers", text=df.index.date),
-        row=2, col=1)
+#     fig.add_trace(
+#         go.Scatter(
+#             x=df.gage_height_va,
+#             y=df.chan_area,
+#             mode="markers", text=df.index.date),
+#         row=2, col=1)
 
-    fig.add_trace(
-        go.Scatter(
-            x=df.gage_height_va,
-            y=df.chan_velocity,
-            mode="markers", text=df.index.date),
-        row=2, col=2)
-    # Update xaxis properties
-    fig.update_xaxes(title_text="WSE (feet)", row=1, col=1)
-    fig.update_yaxes(title_text="Discharge (cfs)", row=1, col=1)
-    fig.update_xaxes(title_text="WSE (feet)", row=1, col=2)
-    fig.update_yaxes(title_text="Width (feet)", row=1, col=2)
-    fig.update_xaxes(title_text="WSE (feet)", row=2, col=1)
-    fig.update_yaxes(title_text="X-section area", row=2, col=1)
-    fig.update_xaxes(title_text="WSE (feet)", row=2, col=2)
-    fig.update_yaxes(title_text="Velocity (feet/sec)", row=2, col=2)
-    # overall figure properties
-    fig.update_layout(
-        height=700,  # width=1400,
-        title_text="USGS Gage Field Measurements",
-        title_x=0.5,
-        showlegend=False,
-        plot_bgcolor='#dce0e2',  # 'whitesmoke'
-        transition_duration=500  # BNY
-    )
-    return fig
+#     fig.add_trace(
+#         go.Scatter(
+#             x=df.gage_height_va,
+#             y=df.chan_velocity,
+#             mode="markers", text=df.index.date),
+#         row=2, col=2)
+#     # Update xaxis properties
+#     fig.update_xaxes(title_text="WSE (feet)", row=1, col=1)
+#     fig.update_yaxes(title_text="Discharge (cfs)", row=1, col=1)
+#     fig.update_xaxes(title_text="WSE (feet)", row=1, col=2)
+#     fig.update_yaxes(title_text="Width (feet)", row=1, col=2)
+#     fig.update_xaxes(title_text="WSE (feet)", row=2, col=1)
+#     fig.update_yaxes(title_text="X-section area", row=2, col=1)
+#     fig.update_xaxes(title_text="WSE (feet)", row=2, col=2)
+#     fig.update_yaxes(title_text="Velocity (feet/sec)", row=2, col=2)
+#     # overall figure properties
+#     fig.update_layout(
+#         height=700,  # width=1400,
+#         title_text="USGS Gage Field Measurements",
+#         title_x=0.5,
+#         showlegend=False,
+#         plot_bgcolor='#dce0e2',  # 'whitesmoke'
+#         transition_duration=500  # BNY
+#     )
+#     return fig
 
 
 #################################################################################################
@@ -986,8 +985,8 @@ def update_ts_graph(gage):
     #     ida_df.to_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), index=True, header=True)
     # To Plot Figures
     if len(field_measure_df) > 0:
-        fig_ts = plot_field_measure(field_measure_df)
-        fig_scatter = plot_scatter(field_measure_df)
+        fig_ts = figures.plot_field_measure(field_measure_df)
+        fig_scatter = figures.plot_scatter(field_measure_df)
         return fig_ts, fig_scatter
 
 
