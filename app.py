@@ -89,7 +89,7 @@ reach_ts["time"] = reach_ts.time.dt.tz_localize("UTC")
 reach_ts = reach_ts[~reach_ts["time"].isna()]  # select only with valid datetime; TODO: think if its better to keep missing dates observations as well
 reach_ts.index = reach_ts["time"]
 reach_ts = reach_ts.drop(columns="time")
-reach_list = list(reach_ts.reach_id.unique())
+# reach_list = list(reach_ts.reach_id.unique())
 # logging.info(f"Number of reaches: {len(reach_list)}")
 
 # # Read Node Timeseries data: Uncomment for node-level data
@@ -116,8 +116,8 @@ reach_list = list(reach_ts.reach_id.unique())
 
 # # Dummy csv file for plotting
 # # df = pd.read_csv('https://gist.githubusercontent.com/chriddyp/5d1ea79569ed194d432e56108a04d188/raw/a9f9e8076b837d541398e999dcbac2b2826a81f8/gdp-life-exp-2007.csv')
-out_csv_folder = "data/usgs/velocity_csv_utc"
-os.makedirs(out_csv_folder, exist_ok=True)  # NEW: So site can be deployed from scratch
+# out_csv_folder = "data/usgs/velocity_csv_utc"
+# os.makedirs(out_csv_folder, exist_ok=True)  # NEW: So site can be deployed from scratch
 # # gages = os.listdir(out_csv_folder)
 # # gages = [f.split(".csv")[0] for f in gages]
 # # gages = [f[2:] for f in gages if len(f) == 10]
@@ -140,7 +140,6 @@ df = df.loc[ohio_reach_with_usgs_gage]
 gages = sorted(list(df.STAID))
 reach_list = sorted(list(df.reach_id))  # only a subset of 33 reaches with corresponding usgs gage mapped
 logging.info(f"Number of reaches: {len(reach_list)}")
-del df 
 # # Or get a subset of gages directly populated inside dropdown box
 # gages = ['01131500', '01205500', '01315000', '01371500', '01502632', '01563200', '02104220', '02128000', '02130900', 
 # '02160326', '02167582', '02172002', '02172300', '02187910', '02193340', '02197500', '02215500', '02223248', '02338000', 
@@ -148,6 +147,35 @@ del df
 # #################################################################################################
 # def plot_nodes(df, reach=None):  # moved to figures.py script
 
+
+# # Download USGS data data offline [only once then comment]
+# problem_gage_list = []
+# for gage in gages:
+#     usgs_df = get_usgs_data.read_usgs_ida(gage)
+#     logging.info(type(usgs_df))
+#     if not isinstance(usgs_df, pd.DataFrame):
+#         # logging.info(f"Removing IDA: {gage}")
+#         problem_gage_list.append(gage)  # gages.remove(gage)
+# gages = list(set(gages).difference(set(problem_gage_list)))
+
+# problem_gage_list = []
+# for gage in gages:
+#     usgs_df = get_usgs_data.read_usgs_field_data(gage)
+#     logging.info(type(usgs_df))
+#     if not isinstance(usgs_df, pd.DataFrame):
+#         problem_gage_list.append(gage)  # gages.remove(gage)
+# usgs_df = None  # using del an be problematic if non-existent
+# gages = list(set(gages).difference(set(problem_gage_list)))
+
+problem_gage_list = ['03085000', '03111534', '03114306', '03150500', '03159530', '03159870', '03206000', '03216600', '03238000', '03254520', 
+                     '03277200', '03284000', '03292494', '03294500', '03303280', '03322420', '03384500', '03399800', '03611500']
+gages = list(set(gages).difference(set(problem_gage_list)))
+# Just select reaches and gages with USGS IDA and Field data
+df = df[df.STAID.isin(gages)]
+gages = sorted(list(df.STAID))
+reach_list = sorted(list(df.reach_id))  # only a subset of 33 reaches with corresponding usgs gage mapped
+logging.info(f"Number of reaches: {len(reach_list)}")
+del df 
 
 #################################################################################################
 ###############################  START OF APP CODE  #############################################
@@ -852,7 +880,7 @@ def update_ts_graph(gage):
 
     # For IDA Data
     ida_df = get_usgs_data.read_usgs_ida(gage)
-    logging.info(f"Type of ida_df: {type(ida_df)}")
+    # logging.info(f"Type of ida_df: {type(ida_df)}")
     # if os.path.exists(os.path.join(out_csv_folder, f'{gage}_ida.csv')):
     #     ida_df = pd.read_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), parse_dates=True, infer_datetime_format=True)
     # else:

@@ -5,10 +5,14 @@ import pytz
 import pandas as pd
 import logging
 
-# Only to download RDB files (new: oct 25, 2019)
+# Only to download RDB files
 # Don't use JSON files for field data as they are not complete columns
-out_csv_folder = "data/usgs/velocity_csv_utc"
-# os.makedirs(out_csv_folder, exist_ok=True)  # NEW: So site can be deployed from scratch
+# out_csv_folder = "data/usgs/velocity_csv_utc"
+ida_folder = "data/usgs/ida"
+os.makedirs(ida_folder, exist_ok=True)  # NEW: So site can be deployed from scratch
+
+field_measure_folder = "data/usgs/field_measure"
+os.makedirs(field_measure_folder, exist_ok=True)  # NEW: So site can be deployed from scratch
 
 
 def read_usgs_ida(gage):
@@ -18,10 +22,10 @@ def read_usgs_ida(gage):
             Check this gage 03399800. It has extra two columns for backwater effect
                 USGS 03399800 OHIO RIVER AT SMITHLAND DAM, SMITHLAND, KY
     """
-    if os.path.exists(os.path.join(out_csv_folder, f'{gage}_ida.csv')):
-        df = pd.read_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), parse_dates=True, infer_datetime_format=True)
+    if os.path.exists(os.path.join(ida_folder, f'{gage}_ida.csv')):
+        df = pd.read_csv(os.path.join(ida_folder, f'{gage}_ida.csv'), parse_dates=True, infer_datetime_format=True)
         return df
-    download_folder = "data/usgs/velocity_csv_utc/downloads"
+    download_folder = f"{ida_folder}/downloads"
     os.makedirs(download_folder, exist_ok=True)
     base_url = 'http://waterservices.usgs.gov/nwis/{data_type}/?format={output_format}&sites={sites}&startDT={startDT}&endDT={endDT}&parameterCd={parameter}'
     ida_url = base_url.format(data_type='iv', output_format='rdb', sites=gage, startDT='2010-10-01T00:00Z', endDT='2011-10-01T00:00Z', parameter='00060,00065')
@@ -68,26 +72,39 @@ def read_usgs_ida(gage):
             df["discharge"] = df.discharge.astype("float")
             df["stage"] = df.stage.astype("float")
             # df = df.dropna()  # This may be required
-            df.to_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), index=True, header=True)
+            df.to_csv(os.path.join(ida_folder, f'{gage}_ida.csv'), index=True, header=True)
             return df
         else:
             return None
     except:
         logging.info(f"IDA: Error downloading/processing {gage}")  # mostly empty due to no field data; just html downloaded by script
-        logging.info(f"Directly check this url: {ida_url}")
+        logging.info(f"\tCheck url: {ida_url}")
 
 
 def read_usgs_field_data(gage):
     """ gage: stationID of USGS gage
     """
-    if os.path.exists(os.path.join(out_csv_folder, f"{gage}.csv")):
-        df = pd.read_csv(os.path.join(out_csv_folder, f"{gage}.csv"), index_col='measurement_dt', parse_dates=True, infer_datetime_format=True)
+    if os.path.exists(os.path.join(field_measure_folder, f"{gage}.csv")):
+        df = pd.read_csv(os.path.join(field_measure_folder, f"{gage}.csv"), index_col='measurement_dt', parse_dates=True, infer_datetime_format=True)
         return df
-
+    download_folder = f"{field_measure_folder}/downloads"
+    os.makedirs(download_folder, exist_ok=True)
     base_url = "http://waterdata.usgs.gov/nwis/measurements?site_no={}&agency_cd=USGS&format=rdb_expanded"
     field_measure_url = base_url.format(gage)
     try:
-        df = pd.read_csv(field_measure_url, comment='#', sep='\t') #newer but not tested here
+        outfile = f'{download_folder}/{gage}.rdb'
+        # Download the discharge from internet by calling this function
+        if not os.path.isfile(outfile):
+            logging.info(f"{gage} <--Downloading  Field Measure")
+            r = requests.get(field_measure_url)
+            if r.status_code == 200:
+                with open(outfile, "wb") as code:
+                    code.write(r.content)
+            else:
+                logging.error(f'\t{gage} \t Request code {r.status_code}')
+
+        # df = pd.read_csv(field_measure_url, comment='#', sep='\t')  # can fail sometimes for large data
+        df = pd.read_csv(outfile, comment='#', sep='\t', low_memory=False)  # from saved rdb file
         ''' #To guard again error due to empty dataframe (may not be necessary because now we have try statement)
         if len(df) == 0:
             ## To protect against data frame that are empty, ie col names present but no data (row)
@@ -128,9 +145,11 @@ def read_usgs_field_data(gage):
         # Drop the duplicates (ie, the ones measured the same time)
         # Seems like these measurements are taken on different branches of streams
         df = df.loc[df.index.drop_duplicates(keep=False)]
-        df.to_csv(os.path.join(out_csv_folder, f'{gage}.csv'), index=True, header=True)  # index_label='measurement_dt or utc_dt'
-        logging.info(f"{gage} <--Downloading  ")
-        return df
+        if len(df) > 1:
+            df.to_csv(os.path.join(field_measure_folder, f'{gage}.csv'), index=True, header=True)  # index_label='measurement_dt or utc_dt'
+            return df
+        else:
+            return None
     except:
-        logging.info(f"Error downloading/processing {gage}")  # mostly empty due to no field data; just html downloaded by script
-        logging.info(f"Directly check this url: {field_measure_url}")
+        logging.info(f"Field Measure: Error downloading/processing {gage}")  # mostly empty due to no field data; just html downloaded by script
+        logging.info(f"\tCheck this url: {field_measure_url}")

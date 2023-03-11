@@ -1,11 +1,19 @@
 # Running notes on changes made after forking 
 Reverse Chronological Order  
 
+## Mar 11, 2024
+ohio2 branch --> merged to main
+- Selecting subset of gages with both stage and discharge IDA data  
+    - some gages has only stage other had two stages with backwater. These gages are currently removed   
+    - out of 33 reach-gage combination we now have only 14 remaining for visualization  
+- Comment out this code after first initialization run  
+
 ## Mar 03, 2024
 ohio1 branch --> merged to main
 - replace "time_str" field with "time" because Merrit used this field  
 - Load, parse and plot Ohio River data  
 - sort index (time) before plotting  
+- moved download and plotting to util script  
 
 ## Feb 03, 2023
 Merged v0_4_sample_ts branch to main
