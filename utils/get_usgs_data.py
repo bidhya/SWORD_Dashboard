@@ -8,7 +8,7 @@ import logging
 # Only to download RDB files
 # Don't use JSON files for field data as they are not complete columns
 # out_csv_folder = "data/usgs/velocity_csv_utc"
-ida_folder = "data/usgs/ida"
+ida_folder = "data/usgs/ida"  # Alert: calling from notebook will create this folder relative to notebook. Clearly wrong!
 os.makedirs(ida_folder, exist_ok=True)  # NEW: So site can be deployed from scratch
 
 field_measure_folder = "data/usgs/field_measure"
@@ -23,12 +23,12 @@ def read_usgs_ida(gage):
                 USGS 03399800 OHIO RIVER AT SMITHLAND DAM, SMITHLAND, KY
     """
     if os.path.exists(os.path.join(ida_folder, f'{gage}_ida.csv')):
-        df = pd.read_csv(os.path.join(ida_folder, f'{gage}_ida.csv'), parse_dates=True, infer_datetime_format=True)
+        df = pd.read_csv(os.path.join(ida_folder, f'{gage}_ida.csv'), index_col='datetime', parse_dates=True, infer_datetime_format=True)
         return df
     download_folder = f"{ida_folder}/downloads"
     os.makedirs(download_folder, exist_ok=True)
     base_url = 'http://waterservices.usgs.gov/nwis/{data_type}/?format={output_format}&sites={sites}&startDT={startDT}&endDT={endDT}&parameterCd={parameter}'
-    ida_url = base_url.format(data_type='iv', output_format='rdb', sites=gage, startDT='2010-10-01T00:00Z', endDT='2011-10-01T00:00Z', parameter='00060,00065')
+    ida_url = base_url.format(data_type='iv', output_format='rdb', sites=gage, startDT='2010-08-01T00:00Z', endDT='2011-09-01T00:00Z', parameter='00060,00065')
     try:
         outfile = f'{download_folder}/{gage}.rdb'
         # Download the discharge from internet by calling this function
@@ -71,6 +71,7 @@ def read_usgs_ida(gage):
             df = df[["discharge", "stage"]]
             df["discharge"] = df.discharge.astype("float")
             df["stage"] = df.stage.astype("float")
+            df = df.loc["2010":"2011"]
             # df = df.dropna()  # This may be required
             df.to_csv(os.path.join(ida_folder, f'{gage}_ida.csv'), index=True, header=True)
             return df
@@ -141,7 +142,8 @@ def read_usgs_field_data(gage):
         width_flag = df['chan_width'] > 0
         area_flag = df['chan_area'] > 0
         df = df[velocity_flag & gage_height_flag & cfs_flag & area_flag & width_flag]
-        df = df['2001':]
+        # df = df['2001':]
+        df = df.loc["2010":"2011"]
         # Drop the duplicates (ie, the ones measured the same time)
         # Seems like these measurements are taken on different branches of streams
         df = df.loc[df.index.drop_duplicates(keep=False)]

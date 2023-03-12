@@ -175,7 +175,13 @@ df = df[df.STAID.isin(gages)]
 gages = sorted(list(df.STAID))
 reach_list = sorted(list(df.reach_id))  # only a subset of 33 reaches with corresponding usgs gage mapped
 logging.info(f"Number of reaches: {len(reach_list)}")
-del df 
+# print(df.head())
+# reach_id = 74267700241
+# gage = df.loc[reach_id]["STAID"]
+# print(gage, type(gage))
+# import sys
+# sys.exit(0)
+# del df 
 
 #################################################################################################
 ###############################  START OF APP CODE  #############################################
@@ -528,27 +534,29 @@ app.layout = html.Div([
         html.H5("Reach Data"),
         html.Div([
             html.Label('Listing of Reaches'),
-            dcc.Dropdown(reach_list, placeholder="Select a reach to plot", id="reach_list_dropdown", searchable=True, clearable=True, maxHeight=200),
+            dcc.Dropdown(reach_list, reach_list[0], placeholder="Select a reach to plot", id="reach_list_dropdown", searchable=True, clearable=True, maxHeight=200),
         ], style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}),
         dcc.Graph(id="Reach_TS"),
         # dcc.Graph(id="Node_TS")  # WSE and Width long profile of NODES for each reach
+        dcc.Graph(id="SWOTvsUSGS")  # , figure=plot_scatter(df)        
+
     ]),
 
-    html.Div(
-        [
-            html.H5("USGS Field Measure Data"),
-            html.Div(
-                [
-                    html.Label('Select USGS Gage to pull field measure data'),
-                    dcc.Dropdown(gages, gages[0], id="gage_list", searchable=True, clearable=False, maxHeight=200,),  # optionHeight=100, # style={'color': 'Gold', 'font-size': 15}
-                    html.Br()
-                ],
-                style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}  # , 'color': 'Gold', 'font-size': 15
-            ),
-
-            dcc.Graph(id="Field_Measure_ts"),  # , figure=plot_field_measure(df)
-            dcc.Graph(id="Field_Measure_Scatter")  # , figure=plot_scatter(df)        
-        ]),
+    # html.Div(
+    #     [
+    #         html.H5("SWOT vs USGS Data"),
+    #         html.Div(
+    #             [
+    #                 html.Label('Select USGS Gage to pull field measure data'),
+    #                 dcc.Dropdown(gages, gages[0], id="gage_list", searchable=True, clearable=False, maxHeight=200,),  # optionHeight=100, # style={'color': 'Gold', 'font-size': 15}
+    #                 html.Br()
+    #             ],
+    #             style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}  # , 'color': 'Gold', 'font-size': 15
+    #         ),
+    #         # dcc.Graph(id="Field_Measure_ts"),  # , figure=plot_field_measure(df)
+    #         # dcc.Graph(id="Field_Measure_Scatter"),  # , figure=plot_scatter(df)        
+    #         # dcc.Graph(id="SWOTvsUSGS")  # , figure=plot_scatter(df)        
+    #     ]),
     html.Div(children=[
         html.Div(
             'Copyright (c) 2022 University of North Carolina at Chapel Hill',
@@ -828,9 +836,11 @@ def update_graph(term, n_clicks):
 @app.callback(
     Output("Reach_TS", "figure"),
     # Output("Node_TS", "figure"),
+    Output("SWOTvsUSGS", "figure"),
     Input("reach_list_dropdown", "value")
 )
 def plot_reach(reach_id):
+    # print(reach_id, type(reach_id))  # reach_id is integer
     reach_ts_sel = reach_ts[reach_ts.reach_id == reach_id]
     reach_ts_sel = reach_ts_sel.sort_index()  # was required for ohio data
     # node_ts_sel = node_ts[node_ts.reach_id == reach_id]  # uncomment for node-level data
@@ -850,7 +860,7 @@ def plot_reach(reach_id):
     fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=1)
     fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=2)
     # overall figure properties
-    fig.update_xaxes(title_text="DateTime (UTC)")
+    fig.update_xaxes(title_text="Date")
     fig.update_layout(height=600, title_text=f"Reach: {reach_id}", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
 
     # # Plot Node data
@@ -860,39 +870,69 @@ def plot_reach(reach_id):
     # node_fig.update_yaxes(title_text="WSE [m]", row=1, col=1)
     # node_fig.update_yaxes(title_text="Width [m]", row=1, col=2)
     # node_fig.update_xaxes(title_text="DateTime (UTC)")
-    # node_fig.update_layout(height=400, title_text="Long profile of nodes", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
-    return fig#, node_fig
-
-
-@app.callback(
-    Output("Field_Measure_ts", "figure"),
-    Output("Field_Measure_Scatter", "figure"),
-    Input("gage_list", "value"))
-def update_ts_graph(gage):
-    logging.info(gage)
+    # node_fig.update_layout(height=400, title_text="Long profile of nodes", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,
+    # print(reach_id, type(reach_id)) 
+    # 
+    gage = df.loc[reach_id]["STAID"]  # here gage is string
     field_measure_df = get_usgs_data.read_usgs_field_data(gage)
-    # if os.path.exists(os.path.join(out_csv_folder, f"{gage}.csv")):
-    #     df = pd.read_csv(os.path.join(out_csv_folder, f"{gage}.csv"), index_col='measurement_dt', parse_dates=True, infer_datetime_format=True)
-    # else:
-    #     # Download file field measure data
-    #     df = get_usgs_data.read_usgs_field_data(gage)
-    #     df.to_csv(os.path.join(out_csv_folder, f'{gage}.csv'), index=True, header=True)  # index_label='measurement_dt or utc_dt'
-
-    # For IDA Data
     ida_df = get_usgs_data.read_usgs_ida(gage)
-    # logging.info(f"Type of ida_df: {type(ida_df)}")
-    # if os.path.exists(os.path.join(out_csv_folder, f'{gage}_ida.csv')):
-    #     ida_df = pd.read_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), parse_dates=True, infer_datetime_format=True)
-    # else:
-    #     # Download IDA (realtime) discharge and stage data
-    #     ida_df = get_usgs_data.read_usgs_ida(gage)
-    #     ida_df.to_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), index=True, header=True)
-    # To Plot Figures
-    if len(field_measure_df) > 0:
-        fig_ts = figures.plot_field_measure(field_measure_df)
-        fig_scatter = figures.plot_scatter(field_measure_df)
-        return fig_ts, fig_scatter
+    # # To reduce data volume because plotly-dash is very slow when plotting more than 15k points
+    # idx = reach_ts_sel.index
+    # x = idx[0]
+    # subset = ida_df.loc[x.strftime("%Y-%m-%d %H")]
+    # for x in idx[1:]:
+    #     temp = ida_df.loc[x.strftime("%Y-%m-%d %H")]
+    #     subset = pd.concat([subset, temp], axis=0)
+    # ida_df = subset  # copy back the the reduced subset
+    # del subset, temp, x, idx
+    # Make Plots
+    swot_usgs = figures.plot_swot_usgs(field_measure_df, ida_df)
+    return fig, swot_usgs
+    # return fig#, node_fig
 
+# @app.callback(
+#     Output("SWOTvsUSGS", "figure"),
+#     Input("gage_list", "value"))
+# def update_ts_graph(gage):
+#     logging.info(gage)
+#     field_measure_df = get_usgs_data.read_usgs_field_data(gage)
+#     ida_df = get_usgs_data.read_usgs_ida(gage)
+#     if len(field_measure_df) > 0:
+#         swot_usgs = figures.plot_swot_usgs(field_measure_df, ida_df)
+#         return swot_usgs
+
+
+# @app.callback(
+#     Output("Field_Measure_ts", "figure"),
+#     Output("Field_Measure_Scatter", "figure"),
+#     Output("SWOTvsUSGS", "figure"),
+#     Input("gage_list", "value"))
+# def update_ts_graph(gage):
+#     logging.info(gage)
+#     field_measure_df = get_usgs_data.read_usgs_field_data(gage)
+#     # if os.path.exists(os.path.join(out_csv_folder, f"{gage}.csv")):
+#     #     df = pd.read_csv(os.path.join(out_csv_folder, f"{gage}.csv"), index_col='measurement_dt', parse_dates=True, infer_datetime_format=True)
+#     # else:
+#     #     # Download file field measure data
+#     #     df = get_usgs_data.read_usgs_field_data(gage)
+#     #     df.to_csv(os.path.join(out_csv_folder, f'{gage}.csv'), index=True, header=True)  # index_label='measurement_dt or utc_dt'
+
+#     # For IDA Data
+#     ida_df = get_usgs_data.read_usgs_ida(gage)
+#     # logging.info(f"Type of ida_df: {type(ida_df)}")
+#     # if os.path.exists(os.path.join(out_csv_folder, f'{gage}_ida.csv')):
+#     #     ida_df = pd.read_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), parse_dates=True, infer_datetime_format=True)
+#     # else:
+#     #     # Download IDA (realtime) discharge and stage data
+#     #     ida_df = get_usgs_data.read_usgs_ida(gage)
+#     #     ida_df.to_csv(os.path.join(out_csv_folder, f'{gage}_ida.csv'), index=True, header=True)
+#     # To Plot Figures
+#     if len(field_measure_df) > 0:
+#         # fig_ts = figures.plot_field_measure(field_measure_df)
+#         # fig_scatter = figures.plot_scatter(field_measure_df)
+#         swot_usgs = figures.plot_swot_usgs(field_measure_df, ida_df)
+#         # return fig_ts, fig_scatter
+#         return fig_ts, fig_scatter, swot_usgs
 
 # Callback for "About" modal popup
 @app.callback(
