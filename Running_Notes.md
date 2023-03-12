@@ -7,6 +7,9 @@ ohio2 branch --> merged to main
     - some gages has only stage other had two stages with backwater. These gages are currently removed   
     - out of 33 reach-gage combination we now have only 14 remaining for visualization  
 - Comment out this code after first initialization run  
+- Plot SWOT, IDA, and Field Measure together
+- App is very slow because scatter >15k points is known to slow down  
+- Subset based on dates for reach to reduce data volume  
 
 ## Mar 03, 2024
 ohio1 branch --> merged to main

@@ -876,15 +876,15 @@ def plot_reach(reach_id):
     gage = df.loc[reach_id]["STAID"]  # here gage is string
     field_measure_df = get_usgs_data.read_usgs_field_data(gage)
     ida_df = get_usgs_data.read_usgs_ida(gage)
-    # # To reduce data volume because plotly-dash is very slow when plotting more than 15k points
-    # idx = reach_ts_sel.index
-    # x = idx[0]
-    # subset = ida_df.loc[x.strftime("%Y-%m-%d %H")]
-    # for x in idx[1:]:
-    #     temp = ida_df.loc[x.strftime("%Y-%m-%d %H")]
-    #     subset = pd.concat([subset, temp], axis=0)
-    # ida_df = subset  # copy back the the reduced subset
-    # del subset, temp, x, idx
+    # To reduce data volume because plotly-dash is very slow when plotting more than 15k points
+    idx = reach_ts_sel.index
+    x = idx[0]
+    subset = ida_df.loc[x.strftime("%Y-%m-%d %H")]
+    for x in idx[1:]:
+        temp = ida_df.loc[x.strftime("%Y-%m-%d %H")]
+        subset = pd.concat([subset, temp], axis=0)
+    ida_df = subset  # copy back the the reduced subset
+    del subset, temp, x, idx
     # Make Plots
     swot_usgs = figures.plot_swot_usgs(field_measure_df, ida_df)
     return fig, swot_usgs
