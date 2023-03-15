@@ -4,6 +4,9 @@ import numpy as np
 import pytz
 import pandas as pd
 import logging
+feet2meters = 0.3048
+cfs2cms = 0.02832  # TODO this is approximate
+
 
 # Only to download RDB files
 # Don't use JSON files for field data as they are not complete columns
@@ -69,9 +72,10 @@ def read_usgs_ida(gage):
             df = df.drop(['datetime', 'tz_cd'], axis=1)
             df.columns = ["discharge", "discharge_cd", "stage", "stage_cd"]
             df = df[["discharge", "stage"]]
-            df["discharge"] = df.discharge.astype("float")
-            df["stage"] = df.stage.astype("float")
+            df["discharge"] = df.discharge.astype("float") * cfs2cms
+            df["stage"] = df.stage.astype("float") * feet2meters
             df = df.loc["2010":"2011"]
+
             # df = df.dropna()  # This may be required
             df.to_csv(os.path.join(ida_folder, f'{gage}_ida.csv'), index=True, header=True)
             return df

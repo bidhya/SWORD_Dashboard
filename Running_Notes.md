@@ -1,6 +1,10 @@
 # Running notes on changes made after forking 
 Reverse Chronological Order  
-## Mar 11, 2024
+## Mar 15, 2024
+- Can you please have it display the gage Id we’re looking at? That would be super.  
+- convert all units to meters  
+
+## Mar 14, 2024
 Cloning only main on new replacement laptop
 
 ## Mar 11, 2024

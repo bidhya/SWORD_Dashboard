@@ -840,6 +840,7 @@ def update_graph(term, n_clicks):
     Input("reach_list_dropdown", "value")
 )
 def plot_reach(reach_id):
+    gage = df.loc[reach_id]["STAID"]  # here gage is string
     # print(reach_id, type(reach_id))  # reach_id is integer
     reach_ts_sel = reach_ts[reach_ts.reach_id == reach_id]
     reach_ts_sel = reach_ts_sel.sort_index()  # was required for ohio data
@@ -861,7 +862,7 @@ def plot_reach(reach_id):
     fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=2)
     # overall figure properties
     fig.update_xaxes(title_text="Date")
-    fig.update_layout(height=600, title_text=f"Reach: {reach_id}", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
+    fig.update_layout(height=600, title_text=f"Reach: {reach_id}  Gage: {gage}", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
 
     # # Plot Node data
     # node_fig = make_subplots(1, 2)
@@ -873,7 +874,7 @@ def plot_reach(reach_id):
     # node_fig.update_layout(height=400, title_text="Long profile of nodes", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,
     # print(reach_id, type(reach_id)) 
     # 
-    gage = df.loc[reach_id]["STAID"]  # here gage is string
+    # gage = df.loc[reach_id]["STAID"]  # here gage is string
     field_measure_df = get_usgs_data.read_usgs_field_data(gage)
     ida_df = get_usgs_data.read_usgs_ida(gage)
     # To reduce data volume because plotly-dash is very slow when plotting more than 15k points
