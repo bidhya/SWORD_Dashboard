@@ -134,12 +134,13 @@ def plot_scatter(df, reach=None):
 def plot_swot_usgs(field_df, ida_df, reach=None):
     """ New function to plot the reach-level SWOT timeseries data """
     # fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)
-    fig = make_subplots(rows=2, cols=2)
+    fig = make_subplots(rows=2, cols=2, 
+                        subplot_titles=["a: [realtime: stage vs discharge] [Placeholder for SWOT H vs gage H]", "b: USGS Realtime Discharge", "c: USGS Realtime Stage", "d: USGS Field Data + [Placeholder for SWOT overlay]"])
     fig.add_trace(
         go.Scatter(
-            x=field_df.gage_height_va,
-            y=field_df.discharge_va,
-            mode="markers", text=field_df.index.date),
+            x=ida_df.stage,
+            y=ida_df.discharge,
+            mode="markers", text=ida_df.index.date),
         row=1, col=1)
 
     fig.add_trace(
@@ -158,23 +159,26 @@ def plot_swot_usgs(field_df, ida_df, reach=None):
 
     fig.add_trace(
         go.Scatter(
-            x=ida_df.stage,
-            y=ida_df.discharge,
+            x=field_df.gage_height_va,
+            y=field_df.chan_width,
             mode="markers"),
         row=2, col=2)
     # Update xaxis properties
-    fig.update_xaxes(title_text="WSE (feet)", row=1, col=1)
-    fig.update_yaxes(title_text="Discharge (cfs)", row=1, col=1)
+    fig.update_xaxes(title_text="WSE [m]", row=1, col=1)
+    fig.update_yaxes(title_text="Discharge [cumec]", row=1, col=1)
+
     fig.update_xaxes(title_text="Date", row=1, col=2)
-    fig.update_yaxes(title_text="Height (feet)", row=1, col=2)
+    fig.update_yaxes(title_text="WSE [m]", row=1, col=2)
+    # fig.update_title(title_text="Height (meters)", row=1, col=2)
+
     fig.update_xaxes(title_text="Date", row=2, col=1)
-    fig.update_yaxes(title_text="Discharge (cfs)", row=2, col=1)
-    fig.update_xaxes(title_text="Height (feet)", row=2, col=2)
-    fig.update_yaxes(title_text="Discharge (cfs)", row=2, col=2)
+    fig.update_yaxes(title_text="Discharge [cumec]", row=2, col=1)
+    fig.update_xaxes(title_text="WSE [m]", row=2, col=2)
+    fig.update_yaxes(title_text="Width [m]", row=2, col=2)
     # overall figure properties
     fig.update_layout(
         height=700,  # width=1400,
-        title_text="USGS Gage Field Measurements",
+        title_text="USGS Data (IDA and Field Measurements)",
         title_x=0.5,
         showlegend=False,
         plot_bgcolor='#dce0e2',  # 'whitesmoke'

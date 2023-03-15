@@ -146,6 +146,13 @@ def read_usgs_field_data(gage):
         width_flag = df['chan_width'] > 0
         area_flag = df['chan_area'] > 0
         df = df[velocity_flag & gage_height_flag & cfs_flag & area_flag & width_flag]
+        # Convert Units to METERS
+        df["gage_height_va"] = df.gage_height_va * feet2meters
+        df["discharge_va"] = df.discharge_va * cfs2cms
+        df["chan_width"] = df.chan_width * feet2meters
+        df["chan_area"] = df.chan_area * feet2meters * feet2meters
+        df["chan_velocity"] = df.chan_velocity * feet2meters
+
         # df = df['2001':]
         df = df.loc["2010":"2011"]
         # Drop the duplicates (ie, the ones measured the same time)

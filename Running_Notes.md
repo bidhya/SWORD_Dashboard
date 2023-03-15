@@ -1,8 +1,8 @@
 # Running notes on changes made after forking 
 Reverse Chronological Order  
 ## Mar 15, 2024
-- Can you please have it display the gage Id we’re looking at? That would be super.  
-- convert all units to meters  
+- Display the gage Id correspondig to Reach.  
+- convert all units to meters [as part of data download and processing]  
 
 ## Mar 14, 2024
 Cloning only main on new replacement laptop
