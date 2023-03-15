@@ -1,5 +1,7 @@
 # Running notes on changes made after forking 
 Reverse Chronological Order  
+## Mar 11, 2024
+Cloning only main on new replacement laptop
 
 ## Mar 11, 2024
 ohio2 branch --> merged to main
