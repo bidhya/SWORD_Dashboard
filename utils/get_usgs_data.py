@@ -17,6 +17,40 @@ os.makedirs(ida_folder, exist_ok=True)  # NEW: So site can be deployed from scra
 field_measure_folder = "data/usgs/field_measure"
 os.makedirs(field_measure_folder, exist_ok=True)  # NEW: So site can be deployed from scratch
 
+sites_folder = "data/usgs/sites"  # Alert: calling from notebook will create this folder relative to notebook. Clearly wrong!
+os.makedirs(sites_folder, exist_ok=True)  # NEW: So site can be deployed from scratch
+
+
+def read_usgs_sites(gages):
+    """
+    https://waterservices.usgs.gov/nwis/site/?format=rdb&sites=01646500,03282120,03287000
+
+    #  agency_cd       -- Agency
+    #  site_no         -- Site identification number
+    #  station_nm      -- Site name
+    #  site_tp_cd      -- Site type
+    #  dec_lat_va      -- Decimal latitude
+    #  dec_long_va     -- Decimal longitude
+    #  coord_acy_cd    -- Latitude-longitude accuracy
+    #  dec_coord_datum_cd -- Decimal Latitude-longitude datum
+    #  alt_va          -- Altitude of Gage/land surface
+    #  alt_acy_va      -- Altitude accuracy
+    #  alt_datum_cd    -- Altitude datum
+    #  huc_cd          -- Hydrologic unit code
+    """
+    if os.path.exists(os.path.join(sites_folder, f'sites.csv')):
+        df = pd.read_csv(os.path.join(sites_folder, f'sites.csv'), index_col='site_no')
+        return df
+
+    sites_url = f"https://waterservices.usgs.gov/nwis/site/?format=rdb&sites={','.join(gages)}"
+    gages_info_df = pd.read_csv(sites_url, comment='#', sep='\t', low_memory=False)
+    gages_info_df = gages_info_df.drop(0)
+    gages_info_df.index = gages_info_df.site_no
+    gages_info_df = gages_info_df.drop(["agency_cd", "site_no"], axis=1)
+    # float(gages_info_df.loc["03381700"]["alt_va"].strip())#.astype(float)
+    gages_info_df.to_csv(os.path.join(sites_folder, f'sites.csv'), index=True, header=True)
+    return gages_info_df
+
 
 def read_usgs_ida(gage):
     """ gage: stationID of USGS gage

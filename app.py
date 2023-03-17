@@ -183,6 +183,10 @@ logging.info(f"Number of reaches: {len(reach_list)}")
 # sys.exit(0)
 # del df 
 
+# Download USGS station data: datum, catchment area etc.
+usgs_site_info_df = get_usgs_data.read_usgs_sites(gages)
+print(usgs_site_info_df)
+
 #################################################################################################
 ###############################  START OF APP CODE  #############################################
 #################################################################################################
