@@ -840,7 +840,7 @@ def update_graph(term, n_clicks):
     Input("reach_list_dropdown", "value")
 )
 def plot_reach(reach_id):
-    # print(reach_id, type(reach_id))  # reach_id is integer
+    datum_elev = 0  # TODO: get datum elevation manually for though API  
     reach_ts_sel = reach_ts[reach_ts.reach_id == reach_id]
     reach_ts_sel = reach_ts_sel.sort_index()  # was required for ohio data
     # node_ts_sel = node_ts[node_ts.reach_id == reach_id]  # uncomment for node-level data
@@ -860,11 +860,12 @@ def plot_reach(reach_id):
     ida_df = subset  # copy back the the reduced subset
     del subset, temp, x, idx
 
+    datum_elev = reach_ts_sel["wse"].min() - ida_df.stage.min()  # TODO: remove this line after getting actual datum elevation  
     # Select one data to make plots
     # Make plot directly here rather than calling another function
     fig = make_subplots(rows=1, cols=3)
     fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="markers", name="wse"), row=1, col=1)  # mode="lines+markers"
-    fig.add_trace(go.Scatter(x=ida_df.index, y=ida_df.stage, mode="markers"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=ida_df.index, y=ida_df.stage + datum_elev, mode="markers"), row=1, col=1)
 
     fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope2"], mode="markers", name="slope2"), row=1, col=2)
     # fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope"], mode="markers", name="slope"), row=2, col=1)
@@ -877,7 +878,7 @@ def plot_reach(reach_id):
     # fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=1)
     # overall figure properties
     fig.update_xaxes(title_text="Date")
-    fig.update_layout(height=600, title_text=f"Reach: {reach_id}  Gage: {gage}", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
+    fig.update_layout(height=500, title_text=f"Reach: {reach_id}  Gage: {gage}", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
 
     # # Plot Node data
     # node_fig = make_subplots(1, 2)
@@ -891,7 +892,7 @@ def plot_reach(reach_id):
     # 
     # gage = df.loc[reach_id]["STAID"]  # here gage is string
     # Make Plot2: USGS data
-    swot_usgs = figures.plot_swot_usgs(field_measure_df, ida_df)
+    swot_usgs = figures.plot_swot_usgs(field_measure_df, ida_df, reach_ts_sel, datum_elev)
     return fig, swot_usgs
     # return fig#, node_fig
 

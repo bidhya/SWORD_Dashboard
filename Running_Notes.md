@@ -4,7 +4,8 @@ Reverse Chronological Order
 ## Mar 17, 2024
 - code cleanup
 - start redesign of interface overlaying USGS stage over SWOT WSE
-- overlay USGS stage over SWOT WSE. Datum NOT yet added
+- overlay USGS stage over SWOT WSE. 
+- Added Datum as difference between minimum of SWOT and USGS_Stage
 
 ## Mar 15, 2024
 - Display the gage Id correspondig to Reach.  
