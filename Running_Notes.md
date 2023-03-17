@@ -1,5 +1,11 @@
 # Running notes on changes made after forking 
 Reverse Chronological Order  
+
+## Mar 17, 2024
+- code cleanup
+- start redesign of interface overlaying USGS stage over SWOT WSE
+- overlay USGS stage over SWOT WSE. Datum NOT yet added
+
 ## Mar 15, 2024
 - Display the gage Id correspondig to Reach.  
 - convert all units to meters [as part of data download and processing]  

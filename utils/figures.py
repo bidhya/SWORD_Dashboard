@@ -16,34 +16,14 @@ def plot_nodes(df, reach=None):
 
     # add base plots
     fig = make_subplots(rows=1, cols=2)
-    fig.add_trace(
-        go.Scatter(
-            x=node_reaches['dist_out']/1000,
-            y=node_reaches['wse'],
-            mode='lines+markers'),
-        row=1, col=1
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=node_reaches['dist_out']/1000,
-            y=node_reaches['width'],
-            mode='markers'),
-        row=1, col=2
-    )
+    fig.add_trace(go.Scatter(x=node_reaches['dist_out']/1000, y=node_reaches['wse'], mode='lines+markers'), row=1, col=1)
+    fig.add_trace(go.Scatter(x=node_reaches['dist_out']/1000, y=node_reaches['width'], mode='markers'), row=1, col=2)
     # Update xaxis properties
-    fig.update_xaxes(
-        title_text="Distance from Outlet (km)",
-        row=1, col=1)
-    fig.update_xaxes(
-        title_text="Distance from Outlet (km)",
-        row=1, col=2)
+    fig.update_xaxes(title_text="Distance from Outlet (km)", row=1, col=1)
+    fig.update_xaxes(title_text="Distance from Outlet (km)", row=1, col=2)
     # Update yaxis properties
-    fig.update_yaxes(
-        title_text="Water Surface Elevation (m)",
-        row=1, col=1)
-    fig.update_yaxes(
-        title_text="Width (m)",
-        row=1, col=2)
+    fig.update_yaxes(title_text="Water Surface Elevation (m)", row=1, col=1)
+    fig.update_yaxes(title_text="Width (m)", row=1, col=2)
     # overall figure properties
     fig.update_layout(
         height=400, #width=1400,
@@ -59,13 +39,7 @@ def plot_nodes(df, reach=None):
 def plot_field_measure(df, reach=None):
     """ New function to plot the reach-level SWOT timeseries data """
     # fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)
-    fig = px.line(
-        df,
-        x=df.index,
-        y="gage_height_va",
-        markers=True,
-        title="Water Surface Elevation (feet)",        
-    )
+    fig = px.line(df, x=df.index, y="gage_height_va", markers=True, title="Water Surface Elevation (feet)")
     fig.update_xaxes(title_text="Date")
     fig.update_yaxes(title_text="WSE (feet)")
     fig.update_layout(
@@ -83,33 +57,10 @@ def plot_scatter(df, reach=None):
     """ New function to plot the reach-level SWOT timeseries data """
     # fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)
     fig = make_subplots(rows=2, cols=2)
-    fig.add_trace(
-        go.Scatter(
-            x=df.gage_height_va,
-            y=df.discharge_va,
-            mode="markers", text=df.index.date),
-        row=1, col=1)
-
-    fig.add_trace(
-        go.Scatter(
-            x=df.gage_height_va,
-            y=df.chan_width,
-            mode="markers", text=df.index.date),
-        row=1, col=2)
-
-    fig.add_trace(
-        go.Scatter(
-            x=df.gage_height_va,
-            y=df.chan_area,
-            mode="markers", text=df.index.date),
-        row=2, col=1)
-
-    fig.add_trace(
-        go.Scatter(
-            x=df.gage_height_va,
-            y=df.chan_velocity,
-            mode="markers", text=df.index.date),
-        row=2, col=2)
+    fig.add_trace(go.Scatter(x=df.gage_height_va, y=df.discharge_va, mode="markers", text=df.index.date), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df.gage_height_va, y=df.chan_width, mode="markers", text=df.index.date), row=1, col=2)
+    fig.add_trace(go.Scatter(x=df.gage_height_va, y=df.chan_area, mode="markers", text=df.index.date), row=2, col=1)
+    fig.add_trace(go.Scatter(x=df.gage_height_va, y=df.chan_velocity, mode="markers", text=df.index.date), row=2, col=2)
     # Update xaxis properties
     fig.update_xaxes(title_text="WSE (feet)", row=1, col=1)
     fig.update_yaxes(title_text="Discharge (cfs)", row=1, col=1)
@@ -136,41 +87,16 @@ def plot_swot_usgs(field_df, ida_df, reach=None):
     # fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)
     fig = make_subplots(rows=2, cols=2, 
                         subplot_titles=["a: [realtime: stage vs discharge] [Placeholder for SWOT H vs gage H]", "b: USGS Realtime Discharge", "c: USGS Realtime Stage", "d: USGS Field Data + [Placeholder for SWOT overlay]"])
-    fig.add_trace(
-        go.Scatter(
-            x=ida_df.stage,
-            y=ida_df.discharge,
-            mode="markers", text=ida_df.index.date),
-        row=1, col=1)
-
-    fig.add_trace(
-        go.Scatter(
-            x=ida_df.index,
-            y=ida_df.stage,
-            mode="markers"),
-        row=1, col=2)
-
-    fig.add_trace(
-        go.Scatter(
-            x=ida_df.index,
-            y=ida_df.discharge,
-            mode="markers", text=ida_df.index),
-        row=2, col=1)
-
-    fig.add_trace(
-        go.Scatter(
-            x=field_df.gage_height_va,
-            y=field_df.chan_width,
-            mode="markers"),
-        row=2, col=2)
+    fig.add_trace(go.Scatter(x=ida_df.stage, y=ida_df.discharge, mode="markers", text=ida_df.index.date), row=1, col=1)
+    fig.add_trace(go.Scatter(x=ida_df.index, y=ida_df.stage, mode="markers"), row=1, col=2)
+    fig.add_trace(go.Scatter(x=ida_df.index, y=ida_df.discharge, mode="markers", text=ida_df.index), row=2, col=1)
+    fig.add_trace(go.Scatter(x=field_df.gage_height_va, y=field_df.chan_width, mode="markers"), row=2, col=2)    
     # Update xaxis properties
     fig.update_xaxes(title_text="WSE [m]", row=1, col=1)
     fig.update_yaxes(title_text="Discharge [cumec]", row=1, col=1)
-
     fig.update_xaxes(title_text="Date", row=1, col=2)
     fig.update_yaxes(title_text="WSE [m]", row=1, col=2)
     # fig.update_title(title_text="Height (meters)", row=1, col=2)
-
     fig.update_xaxes(title_text="Date", row=2, col=1)
     fig.update_yaxes(title_text="Discharge [cumec]", row=2, col=1)
     fig.update_xaxes(title_text="WSE [m]", row=2, col=2)

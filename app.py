@@ -840,26 +840,41 @@ def update_graph(term, n_clicks):
     Input("reach_list_dropdown", "value")
 )
 def plot_reach(reach_id):
-    gage = df.loc[reach_id]["STAID"]  # here gage is string
     # print(reach_id, type(reach_id))  # reach_id is integer
     reach_ts_sel = reach_ts[reach_ts.reach_id == reach_id]
     reach_ts_sel = reach_ts_sel.sort_index()  # was required for ohio data
     # node_ts_sel = node_ts[node_ts.reach_id == reach_id]  # uncomment for node-level data
     # Get unique list of dates (without time)
+    
+    # Get USGS Data: IDA and Field Measure
+    gage = df.loc[reach_id]["STAID"]  # here gage is string
+    field_measure_df = get_usgs_data.read_usgs_field_data(gage)
+    ida_df = get_usgs_data.read_usgs_ida(gage)
+    # To reduce data volume because plotly-dash is very slow when plotting more than 15k points
+    idx = reach_ts_sel.index
+    x = idx[0]
+    subset = ida_df.loc[x.strftime("%Y-%m-%d %H")]
+    for x in idx[1:]:
+        temp = ida_df.loc[x.strftime("%Y-%m-%d %H")]
+        subset = pd.concat([subset, temp], axis=0)
+    ida_df = subset  # copy back the the reduced subset
+    del subset, temp, x, idx
 
     # Select one data to make plots
     # Make plot directly here rather than calling another function
-    fig = make_subplots(rows=2, cols=2)
-    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="lines+markers", name="wse"), row=1, col=1)
-    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["width"], mode="lines+markers", name="width"), row=1, col=2)
-    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope"], mode="lines+markers", name="slope"), row=2, col=1)
-    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope2"], mode="lines+markers", name="slope2"), row=2, col=2)
+    fig = make_subplots(rows=1, cols=3)
+    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="markers", name="wse"), row=1, col=1)  # mode="lines+markers"
+    fig.add_trace(go.Scatter(x=ida_df.index, y=ida_df.stage, mode="markers"), row=1, col=1)
+
+    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope2"], mode="markers", name="slope2"), row=1, col=2)
+    # fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope"], mode="markers", name="slope"), row=2, col=1)
+    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["width"], mode="markers", name="width"), row=1, col=3)
     # Update xaxis properties
     # fig.update_xaxes(title_text="DateTime (UTC)", row=1, col=1)
     fig.update_yaxes(title_text="WSE [m]", row=1, col=1)
-    fig.update_yaxes(title_text="Width [m]", row=1, col=2)
-    fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=1)
-    fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=2)
+    fig.update_yaxes(title_text="Slope [mm/km]", row=1, col=2)
+    fig.update_yaxes(title_text="Width [m]", row=1, col=3)
+    # fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=1)
     # overall figure properties
     fig.update_xaxes(title_text="Date")
     fig.update_layout(height=600, title_text=f"Reach: {reach_id}  Gage: {gage}", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
@@ -875,18 +890,7 @@ def plot_reach(reach_id):
     # print(reach_id, type(reach_id)) 
     # 
     # gage = df.loc[reach_id]["STAID"]  # here gage is string
-    field_measure_df = get_usgs_data.read_usgs_field_data(gage)
-    ida_df = get_usgs_data.read_usgs_ida(gage)
-    # To reduce data volume because plotly-dash is very slow when plotting more than 15k points
-    idx = reach_ts_sel.index
-    x = idx[0]
-    subset = ida_df.loc[x.strftime("%Y-%m-%d %H")]
-    for x in idx[1:]:
-        temp = ida_df.loc[x.strftime("%Y-%m-%d %H")]
-        subset = pd.concat([subset, temp], axis=0)
-    ida_df = subset  # copy back the the reduced subset
-    del subset, temp, x, idx
-    # Make Plots
+    # Make Plot2: USGS data
     swot_usgs = figures.plot_swot_usgs(field_measure_df, ida_df)
     return fig, swot_usgs
     # return fig#, node_fig
