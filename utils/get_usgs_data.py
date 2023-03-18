@@ -39,16 +39,19 @@ def read_usgs_sites(gages):
     #  huc_cd          -- Hydrologic unit code
     """
     if os.path.exists(os.path.join(sites_folder, f'sites.csv')):
-        df = pd.read_csv(os.path.join(sites_folder, f'sites.csv'), index_col='site_no')
-        return df
-
-    sites_url = f"https://waterservices.usgs.gov/nwis/site/?format=rdb&sites={','.join(gages)}"
-    gages_info_df = pd.read_csv(sites_url, comment='#', sep='\t', low_memory=False)
-    gages_info_df = gages_info_df.drop(0)
+        logging.info("Using existing sites csv")
+        gages_info_df = pd.read_csv(os.path.join(sites_folder, f'sites.csv'), dtype="str")  # , index_col='site_no'  <-- converts to INT, don't use
+        # return gages_info_df
+    else:
+        # Download and save the file
+        sites_url = f"https://waterservices.usgs.gov/nwis/site/?format=rdb&sites={','.join(gages)}"
+        gages_info_df = pd.read_csv(sites_url, comment='#', sep='\t', low_memory=False)
+        gages_info_df = gages_info_df.drop(0)
+        # gages_info_df = gages_info_df.drop(["agency_cd"], axis=1)  #, "site_no"
+        # float(gages_info_df.loc["03381700"]["alt_va"].strip())#.astype(float)
+        gages_info_df.to_csv(os.path.join(sites_folder, f'sites.csv'), index=False, header=True)
     gages_info_df.index = gages_info_df.site_no
-    gages_info_df = gages_info_df.drop(["agency_cd", "site_no"], axis=1)
-    # float(gages_info_df.loc["03381700"]["alt_va"].strip())#.astype(float)
-    gages_info_df.to_csv(os.path.join(sites_folder, f'sites.csv'), index=True, header=True)
+    gages_info_df = gages_info_df.drop(["agency_cd","site_no"], axis=1)  #, "site_no"
     return gages_info_df
 
 

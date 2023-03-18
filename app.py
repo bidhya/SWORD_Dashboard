@@ -22,6 +22,8 @@ import logging
 from utils import get_usgs_data, figures
 logging.basicConfig(filename="mylogs.log", level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 
+feet2meters = 0.3048
+
 #################################################################################################
 ######################################  FUNCTIONS  ##############################################
 #################################################################################################
@@ -174,7 +176,7 @@ gages = list(set(gages).difference(set(problem_gage_list)))
 df = df[df.STAID.isin(gages)]
 gages = sorted(list(df.STAID))
 reach_list = sorted(list(df.reach_id))  # only a subset of 33 reaches with corresponding usgs gage mapped
-logging.info(f"Number of reaches: {len(reach_list)}")
+# logging.info(f"Number of reaches: {len(reach_list)}")
 # print(df.head())
 # reach_id = 74267700241
 # gage = df.loc[reach_id]["STAID"]
@@ -185,7 +187,7 @@ logging.info(f"Number of reaches: {len(reach_list)}")
 
 # Download USGS station data: datum, catchment area etc.
 usgs_site_info_df = get_usgs_data.read_usgs_sites(gages)
-print(usgs_site_info_df)
+# print(usgs_site_info_df)
 
 #################################################################################################
 ###############################  START OF APP CODE  #############################################
@@ -844,7 +846,6 @@ def update_graph(term, n_clicks):
     Input("reach_list_dropdown", "value")
 )
 def plot_reach(reach_id):
-    datum_elev = 0  # TODO: get datum elevation manually for though API  
     reach_ts_sel = reach_ts[reach_ts.reach_id == reach_id]
     reach_ts_sel = reach_ts_sel.sort_index()  # was required for ohio data
     # node_ts_sel = node_ts[node_ts.reach_id == reach_id]  # uncomment for node-level data
@@ -864,7 +865,8 @@ def plot_reach(reach_id):
     ida_df = subset  # copy back the the reduced subset
     del subset, temp, x, idx
 
-    datum_elev = reach_ts_sel["wse"].min() - ida_df.stage.min()  # TODO: remove this line after getting actual datum elevation  
+    datum_elev = float(usgs_site_info_df.loc[gage]["alt_va"].strip()) * feet2meters
+    # datum_elev = reach_ts_sel["wse"].min() - ida_df.stage.min()  # if datum elevation is not available  
     # Select one data to make plots
     # Make plot directly here rather than calling another function
     fig = make_subplots(rows=1, cols=3)
@@ -882,7 +884,7 @@ def plot_reach(reach_id):
     # fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=1)
     # overall figure properties
     fig.update_xaxes(title_text="Date")
-    fig.update_layout(height=500, title_text=f"Reach: {reach_id}  Gage: {gage}", title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
+    fig.update_layout(height=500, title_text=f"Reach: {reach_id}  Gage: {gage}  DatumElev = {datum_elev:.2f} m",title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
 
     # # Plot Node data
     # node_fig = make_subplots(1, 2)

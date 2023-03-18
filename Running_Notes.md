@@ -1,12 +1,12 @@
 # Running notes on changes made after forking 
 Reverse Chronological Order  
 
-## Mar 17, 2024
-- Round1 already merged to Main
+## Mar 17, 2024  --> merged to Main round1 and 2
 - code cleanup
 - start redesign of interface overlaying USGS stage over SWOT WSE
 - overlay USGS stage over SWOT WSE. 
 - Added Datum as difference between minimum of SWOT and USGS_Stage
+- Pulling datums from USGS using pandas and converted to meters  
 
 ## Mar 15, 2024
 - Display the gage Id correspondig to Reach.  
