@@ -39,7 +39,7 @@ def read_usgs_sites(gages):
     #  huc_cd          -- Hydrologic unit code
     """
     if os.path.exists(os.path.join(sites_folder, f'sites.csv')):
-        logging.info("Using existing sites csv")
+        # logging.info("Using existing sites csv")
         gages_info_df = pd.read_csv(os.path.join(sites_folder, f'sites.csv'), dtype="str")  # , index_col='site_no'  <-- converts to INT, don't use
         # return gages_info_df
     else:

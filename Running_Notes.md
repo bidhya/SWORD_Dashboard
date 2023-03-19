@@ -7,6 +7,7 @@ Reverse Chronological Order
 - overlay USGS stage over SWOT WSE. 
 - Added Datum as difference between minimum of SWOT and USGS_Stage
 - Pulling datums from USGS using pandas and converted to meters  
+- Display reachid and gage in a html div so it is selectable 
 
 ## Mar 15, 2024
 - Display the gage Id correspondig to Reach.  
