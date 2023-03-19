@@ -542,6 +542,8 @@ app.layout = html.Div([
             html.Label('Listing of Reaches'),
             dcc.Dropdown(reach_list, reach_list[0], placeholder="Select a reach to plot", id="reach_list_dropdown", searchable=True, clearable=True, maxHeight=200),
         ], style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}),
+        html.Div(id="reach_description"),  #, "Reach =   Gage = "
+        
         dcc.Graph(id="Reach_TS"),
         # dcc.Graph(id="Node_TS")  # WSE and Width long profile of NODES for each reach
         dcc.Graph(id="SWOTvsUSGS")  # , figure=plot_scatter(df)        
@@ -840,6 +842,7 @@ def update_graph(term, n_clicks):
         return fig, n_clicks
 
 @app.callback(
+    Output("reach_description", "children"),
     Output("Reach_TS", "figure"),
     # Output("Node_TS", "figure"),
     Output("SWOTvsUSGS", "figure"),
@@ -884,7 +887,8 @@ def plot_reach(reach_id):
     # fig.update_yaxes(title_text="Slope [mm/km]", row=2, col=1)
     # overall figure properties
     fig.update_xaxes(title_text="Date")
-    fig.update_layout(height=500, title_text=f"Reach: {reach_id}  Gage: {gage}  DatumElev = {datum_elev:.2f} m",title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
+    # fig.update_layout(height=500, title_text=f"Reach: {reach_id}  Gage: {gage}  DatumElev = {datum_elev:.2f} m",title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
+    fig.update_layout(height=500, showlegend=True, plot_bgcolor='#dce0e2', transition_duration=500)  # width=1400,  
 
     # # Plot Node data
     # node_fig = make_subplots(1, 2)
@@ -899,7 +903,8 @@ def plot_reach(reach_id):
     # gage = df.loc[reach_id]["STAID"]  # here gage is string
     # Make Plot2: USGS data
     swot_usgs = figures.plot_swot_usgs(field_measure_df, ida_df, reach_ts_sel, datum_elev)
-    return fig, swot_usgs
+    txt_output = f"ReachID = {reach_id}     USGS Gage = {gage}    Datum Elevation = {datum_elev:.2f} m"
+    return txt_output, fig, swot_usgs
     # return fig#, node_fig
 
 # @app.callback(
