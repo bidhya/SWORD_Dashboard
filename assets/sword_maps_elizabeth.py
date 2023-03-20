@@ -1,12 +1,12 @@
 import os
-os.chdir('C:/Github/SWORD_Dashboard/')  # os.chdir('/Users/ealteanau/Documents/SWORD_Dev/src/SWORD_Dashboard/assets/')
+os.chdir('/Users/ealteanau/Documents/SWORD_Dev/src/SWORD_Dashboard/assets/')
 import geopandas as gp
 import numpy as np
 import folium
 from branca.element import MacroElement
 from jinja2 import Template
 import random
-from matplotlib import colormaps as cm  # from matplotlib import cm  #  MatplotlibDeprecationWarning: The get_cmap function was deprecated in Matplotlib 3.7 and will be removed two minor releases later. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap(obj)`` instead.
+from matplotlib import cm
 from mapclassify import Quantiles, EqualInterval
 from matplotlib.colors import rgb2hex
 import branca_custom as bcm
@@ -122,10 +122,9 @@ def get_data(fn):
 ########################################### MAIN CODE ###########################################
 #################################################################################################
 # read in and format data
-outdir = 'C:/Github/SWORD_Dashboard/data_x/'  # '/Users/ealteanau/Documents/SWORD_Dev/src/SWORD_Dashboard/data/'
-shp_dir = 'C:/Github/SWOT_data/SWORD_v14_shp/shp/NA/'# '/Users/ealteanau/Documents/SWORD_Dev/outputs/Reaches_Nodes/v14/shp/'
+outdir = '/Users/ealteanau/Documents/SWORD_Dev/src/SWORD_Dashboard/data/'
+shp_dir = '/Users/ealteanau/Documents/SWORD_Dev/outputs/Reaches_Nodes/v14/shp/'
 shp_paths = [file for file in getListOfFiles(shp_dir) if '.shp' in file and 'reaches' in file]
-
 shp_paths = np.unique(shp_paths) 
 basins = [path[-12:-8] for path in shp_paths]
 
@@ -371,7 +370,7 @@ for ind in list(range(len(shp_paths))):
 
     parent_map.add_child(rch_layer)
     parent_map.add_child(wse_layer)
-    parent_map.add_child(wth_layer)  # Once the layer is defined you can add it to the final map using "map.add_child" (see lines starting at 373). 
+    parent_map.add_child(wth_layer)
     parent_map.add_child(facc_layer)
     parent_map.add_child(dist_layer)
     parent_map.add_child(slope_layer)

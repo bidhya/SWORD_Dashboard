@@ -134,3 +134,4 @@ dmypy.json
 .DS_Store
 .flake8
 *.log
+data_x/
