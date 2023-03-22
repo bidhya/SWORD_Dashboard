@@ -1,5 +1,5 @@
 import os
-os.chdir('C:/Github/SWORD_Dashboard/')  # os.chdir('/Users/ealteanau/Documents/SWORD_Dev/src/SWORD_Dashboard/assets/')
+os.chdir('C:/Github/SWORD_Dashboard/assets/')  # os.chdir('/Users/ealteanau/Documents/SWORD_Dev/src/SWORD_Dashboard/assets/')
 import geopandas as gp
 import numpy as np
 import folium

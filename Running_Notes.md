@@ -1,6 +1,11 @@
 # Running notes on changes made after forking 
 Reverse Chronological Order  
 
+## Mar 22, 2024  --> 
+- modified sword_maps.py to match my python environment, path, and updates  
+- mapping and symbology still not working on my machine  
+- added gages on basin74 (by E. Altaneu)
+
 ## Mar 17, 2024  --> merged to Main round1 and 2
 - code cleanup
 - start redesign of interface overlaying USGS stage over SWOT WSE
