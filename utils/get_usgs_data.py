@@ -111,7 +111,7 @@ def read_usgs_ida(gage):
             df = df[["discharge", "stage"]]
             df["discharge"] = df.discharge.astype("float") * cfs2cms
             df["stage"] = df.stage.astype("float") * feet2meters
-            df = df.loc["2010":"2011"]
+            df = df.loc["2010":"2011"]  # FutureWarning: Value based partial slicing on non-monotonic DatetimeIndexes with non-existing keys is deprecated and will raise a KeyError in a future Version.
 
             # df = df.dropna()  # This may be required
             df.to_csv(os.path.join(ida_folder, f'{gage}_ida.csv'), index=True, header=True)
