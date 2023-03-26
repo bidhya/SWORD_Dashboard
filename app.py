@@ -859,14 +859,37 @@ def plot_reach(reach_id):
     field_measure_df = get_usgs_data.read_usgs_field_data(gage)
     ida_df = get_usgs_data.read_usgs_ida(gage)
     # To reduce data volume because plotly-dash is very slow when plotting more than 15k points
+    # Approach I: match the corresponding date time with reach observations [this left ~ 4 corresponding obs (every15 mins)]
     idx = reach_ts_sel.index
-    x = idx[0]
-    subset = ida_df.loc[x.strftime("%Y-%m-%d %H")]
-    for x in idx[1:]:
-        temp = ida_df.loc[x.strftime("%Y-%m-%d %H")]
-        subset = pd.concat([subset, temp], axis=0)
-    ida_df = subset  # copy back the the reduced subset
-    del subset, temp, x, idx
+    # x = idx[0]
+    # ida_df_subset = ida_df.loc[x.strftime("%Y-%m-%d %H")]
+    # print(ida_df_subset)
+    # for x in idx[1:]:
+    #     temp = pd.DataFrame(ida_df.loc[x.strftime("%Y-%m-%d %H")])
+    #     ida_df_subset = pd.concat([ida_df_subset, temp], axis=0)
+    # # ida_df = subset  # copy back the the reduced subset
+    # print("temp::", len(temp), type(temp), temp)
+    # del temp, x, idx  # ida_df_subset, 
+
+    matching_idx_list = []  # list of indices closest in match to reach datetime index
+    from bisect import bisect #operate as sorted container
+    timestamps = np.array(ida_df.index)  # get timestamps from ida_df index
+    for x in idx:
+        upper_index = bisect(timestamps, x, hi=len(timestamps)-1) #find the upper index of the closest time stamp
+        df_index = ida_df.index.get_loc(min(timestamps[upper_index], timestamps[upper_index-1],key=lambda t: abs(t - x))) #find the closest between upper and lower timestamp
+        matching_idx_list.append(df_index)
+    ida_df_subset = ida_df.iloc[matching_idx_list].sort_index()
+
+    # New: Resample to hourly or daily to reduce data volume but also make contineous time series
+    ida_df = ida_df[~ida_df.index.duplicated(keep='first')]
+    ## To handle missing values, so use Pandas reindex and interpolate functions
+    first_day = ida_df.index[0]     # Timestamp('2010-10-01 05:00:00', tz=None)
+    last_day = ida_df.index[-1]     # Timestamp('2011-11-01 04:30:00', tz=None)
+    hourly_index = pd.date_range(first_day, last_day, freq='1H')  # Make a new hourly interval datetime index
+    ida_df_hourly = ida_df.reindex(hourly_index)
+    # daily_index = pd.date_range(first_day, last_day, freq='d')  # Make a new hourly interval datetime index
+    # ida_df_daily = ida_df.reindex(daily_index)
+    ida_df = ida_df_hourly
 
     datum_elev = float(usgs_site_info_df.loc[gage]["alt_va"].strip()) * feet2meters
     # datum_elev = reach_ts_sel["wse"].min() - ida_df.stage.min()  # if datum elevation is not available  
@@ -874,7 +897,8 @@ def plot_reach(reach_id):
     # Make plot directly here rather than calling another function
     fig = make_subplots(rows=1, cols=3)
     fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="markers", name="wse"), row=1, col=1)  # mode="lines+markers"
-    fig.add_trace(go.Scatter(x=ida_df.index, y=ida_df.stage + datum_elev, mode="markers"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=ida_df_hourly.index, y=ida_df_hourly.stage + datum_elev, mode="lines", name="hourly (from usgs_IDA)"), row=1, col=1)
+    # fig.add_trace(go.Scatter(x=ida_df_daily.index, y=ida_df_daily.stage + datum_elev, mode="lines+markers", name="usgs_ida_daily"), row=1, col=1)
 
     fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope2"], mode="markers", name="slope2"), row=1, col=2)
     # fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope"], mode="markers", name="slope"), row=2, col=1)
@@ -902,7 +926,8 @@ def plot_reach(reach_id):
     # 
     # gage = df.loc[reach_id]["STAID"]  # here gage is string
     # Make Plot2: USGS data
-    swot_usgs = figures.plot_swot_usgs(field_measure_df, ida_df, reach_ts_sel, datum_elev)
+    # logging.info(f"Count of ida_df_subset and reach_ts_sel {len(ida_df_subset)}  {len(reach_ts_sel)}")
+    swot_usgs = figures.plot_swot_usgs(field_measure_df, ida_df_subset, ida_df, reach_ts_sel, datum_elev)
     txt_output = f"ReachID = {reach_id}     USGS Gage = {gage}    Datum Elevation = {datum_elev:.2f} m"
     return txt_output, fig, swot_usgs
     # return fig#, node_fig

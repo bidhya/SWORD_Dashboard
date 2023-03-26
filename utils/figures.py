@@ -82,29 +82,27 @@ def plot_scatter(df, reach=None):
     return fig
 
 
-def plot_swot_usgs(field_df, ida_df, reach_ts_sel, datum_elev=0):
-    """ New function to plot the reach-level SWOT timeseries data """
-    fig = make_subplots(rows=1, cols=3, 
-                        subplot_titles=["[stage-discharge] [\nPlaceholder for SWOT vs gage WSE Scatter]", "SWOT and USGS Field Data", "USGS Realtime Discharge"])
-    fig.add_trace(go.Scatter(x=ida_df.stage, y=ida_df.discharge, mode="markers", text=ida_df.index.date), row=1, col=1)
-
-    fig.add_trace(go.Scatter(x=reach_ts_sel.wse, y=reach_ts_sel.width, mode="markers"), row=1, col=2)  # SWOT
-    fig.add_trace(go.Scatter(x=field_df.gage_height_va + datum_elev, y=field_df.chan_width, mode="markers"), row=1, col=2)  #USGS Field Measure; TODO: Add datum elevation to get WSE  
-
-    fig.add_trace(go.Scatter(x=ida_df.index, y=ida_df.discharge, mode="markers", text=ida_df.index), row=1, col=3)
+def plot_swot_usgs(field_df, ida_df_subset, ida_df, reach_ts_sel, datum_elev=0):
+    """ ida_df : matches with reach_ts_sel time closely (1 to 1) """
+    fig = make_subplots(rows=1, cols=3, subplot_titles=["SWOT vs USGS Gage WSE", "SWOT and USGS Field Data", "USGS Realtime Discharge"])
+    # fig.add_trace(go.Scatter(x=ida_df.stage, y=ida_df.discharge, mode="markers", text=ida_df.index.date), row=1, col=1)
+    fig.add_trace(go.Scatter(x=reach_ts_sel.wse, y=ida_df_subset.stage + datum_elev, mode="markers", name="SWOT vs USGS"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=reach_ts_sel.wse, y=reach_ts_sel.width, mode="markers", name="SWOT"), row=1, col=2)  # SWOT
+    fig.add_trace(go.Scatter(x=field_df.gage_height_va + datum_elev, y=field_df.chan_width, mode="markers", name="USGS Field Data"), row=1, col=2)  # USGS Field Measure   
+    fig.add_trace(go.Scatter(x=ida_df.index, y=ida_df.discharge, mode="lines", text=ida_df.index, name="hourly (from usgs_IDA)"), row=1, col=3)
     # Update xaxis properties
-    fig.update_xaxes(title_text="WSE [m]", row=1, col=1)
-    fig.update_yaxes(title_text="Discharge [cumec]", row=1, col=1)
+    fig.update_xaxes(title_text="WSE Gage [m]", row=1, col=1)
+    fig.update_yaxes(title_text="WSE SWOT [m]", row=1, col=1)
     fig.update_xaxes(title_text="WSE [m]", row=1, col=2)
     fig.update_yaxes(title_text="Width [m]", row=1, col=2)
-    fig.update_xaxes(title_text="Date", row=2, col=1)
-    fig.update_yaxes(title_text="Discharge [cumec]", row=2, col=1)
+    fig.update_xaxes(title_text="Date", row=1, col=3)
+    fig.update_yaxes(title_text="Discharge [cumec]", row=1, col=3)
     # overall figure properties
     fig.update_layout(
         height=500,  # width=1400,
         title_text="USGS Data (IDA and Field Measurements)",
         title_x=0.5,
-        showlegend=False,
+        showlegend=True,
         plot_bgcolor='#dce0e2',  # 'whitesmoke'
         transition_duration=500  # BNY
     )
