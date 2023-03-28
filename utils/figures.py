@@ -55,7 +55,8 @@ def plot_field_measure(df, reach=None):
 
 
 def plot_scatter(df, reach=None):
-    """ New function to plot the reach-level SWOT timeseries data """
+    """ Not used  
+    New function to plot the reach-level SWOT timeseries data """
     # fig = px.scatter(df, x="gdp per capita", y="life expectancy", size="population", color="continent", hover_name="country", log_x=True, size_max=60)
     fig = make_subplots(rows=2, cols=2)
     fig.add_trace(go.Scatter(x=df.gage_height_va, y=df.discharge_va, mode="markers", text=df.index.date), row=1, col=1)
@@ -85,16 +86,16 @@ def plot_scatter(df, reach=None):
 
 def plot_swot_usgs(field_df, ida_df_subset, ida_df, reach_ts_sel, datum_elev=0):
     """ ida_df : matches with reach_ts_sel time closely (1 to 1) """
-    fig = make_subplots(rows=1, cols=3, subplot_titles=["SWOT vs USGS Gage WSE", "SWOT and USGS Field Data", "USGS Realtime Discharge"])
+    fig = make_subplots(rows=1, cols=3, subplot_titles=["SWOT vs Gage WSE", "SWOT and USGS Field Data", "USGS Realtime Discharge"])
     # fig.add_trace(go.Scatter(x=ida_df.stage, y=ida_df.discharge, mode="markers", text=ida_df.index.date), row=1, col=1)
-    fig.add_trace(go.Scatter(x=ida_df_subset.stage + datum_elev, y=reach_ts_sel.wse, mode="markers", name="SWOT vs USGS"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=ida_df_subset.stage + datum_elev, y=reach_ts_sel.wse, mode="markers", name="SWOT vs USGS", showlegend=False), row=1, col=1)
     # Add OLS fit to the plot
     mod = sm.OLS(reach_ts_sel.wse.values, sm.add_constant(ida_df_subset.stage.values + datum_elev)).fit()  # , missing="drop"
     fig.add_trace(go.Scatter(x=ida_df_subset.stage + datum_elev, y=mod.fittedvalues, mode="lines", name=f"OLS trendline. (R-squared={mod.rsquared:.2f})"), row=1, col=1)
 
     fig.add_trace(go.Scatter(x=reach_ts_sel.wse, y=reach_ts_sel.width, mode="markers", name="SWOT"), row=1, col=2)  # SWOT
     fig.add_trace(go.Scatter(x=field_df.gage_height_va + datum_elev, y=field_df.chan_width, mode="markers", name="USGS Field Data"), row=1, col=2)  # USGS Field Measure   
-    fig.add_trace(go.Scatter(x=ida_df.index, y=ida_df.discharge, mode="lines", text=ida_df.index, name="hourly (from usgs_IDA)"), row=1, col=3)
+    fig.add_trace(go.Scatter(x=ida_df.index, y=ida_df.discharge, mode="lines", text=ida_df.index, name="hourly (from usgs_IDA)", showlegend=False), row=1, col=3)
     # Update xaxis properties
     fig.update_xaxes(title_text="WSE Gage [m]", row=1, col=1)
     fig.update_yaxes(title_text="WSE SWOT [m]", row=1, col=1)
@@ -105,7 +106,7 @@ def plot_swot_usgs(field_df, ida_df_subset, ida_df, reach_ts_sel, datum_elev=0):
     # overall figure properties
     fig.update_layout(
         height=400,  # width=1400,
-        title_text="USGS Data (IDA and Field Measurements)",
+        # title_text="USGS Data (IDA and Field Measurements)",
         title_x=0.5,
         showlegend=True,
         plot_bgcolor='#dce0e2',

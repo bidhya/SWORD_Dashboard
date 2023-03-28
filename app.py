@@ -337,30 +337,30 @@ header = dbc.Navbar(
                 ],
                 align="center",
             ),
-            dbc.Row(
-                [
-                    dbc.Col(
-                        [
-                            dbc.NavbarToggler(id="navbar-toggler"),
-                            dbc.Collapse(
-                                dbc.Nav(
-                                    [
-                                        dbc.NavItem(button_about,),
-                                        dbc.NavItem(button_download,),
-                                    ],
-                                    navbar=True,
-                                ),
-                                id="navbar-collapse",
-                                navbar=True,
-                            ),
-                            modal_overlay,
-                            download_overlay,
-                        ],
-                        md=2,
-                    ),
-                ],
-                align="center",
-            ),
+            # dbc.Row(
+            #     [
+            #         dbc.Col(
+            #             [
+            #                 dbc.NavbarToggler(id="navbar-toggler"),
+            #                 dbc.Collapse(
+            #                     dbc.Nav(
+            #                         [
+            #                             dbc.NavItem(button_about,),
+            #                             dbc.NavItem(button_download,),
+            #                         ],
+            #                         navbar=True,
+            #                     ),
+            #                     id="navbar-collapse",
+            #                     navbar=True,
+            #                 ),
+            #                 modal_overlay,
+            #                 download_overlay,
+            #             ],
+            #             md=2,
+            #         ),
+            #     ],
+            #     align="center",
+            # ),
         ],
         fluid=True,
         className='bg-primary text-white p-2',
@@ -898,7 +898,7 @@ def plot_reach(reach_id):
     # datum_elev = reach_ts_sel["wse"].min() - ida_df.stage.min()  # if datum elevation is not available  
     # Select one data to make plots
     # Make plot directly here rather than calling another function
-    fig = make_subplots(rows=1, cols=3)
+    fig = make_subplots(rows=1, cols=3, subplot_titles=["SWOT and Gage WSE", "SWOT Slope", "SWOT Width"])
     fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="markers", name="wse"), row=1, col=1)  # mode="lines+markers"
     fig.add_trace(go.Scatter(x=ida_df_hourly.index, y=ida_df_hourly.stage + datum_elev, mode="lines", name="hourly (from usgs_IDA)"), row=1, col=1)
     # fig.add_trace(go.Scatter(x=ida_df_daily.index, y=ida_df_daily.stage + datum_elev, mode="lines+markers", name="usgs_ida_daily"), row=1, col=1)
