@@ -9,4 +9,4 @@ numpy
 pandas
 plotly
 requests
-
+statsmodels
