@@ -3,6 +3,7 @@ import pandas as pd
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import plotly.express as px
+import statsmodels.api as sm
 # import logging
 
 
@@ -86,7 +87,11 @@ def plot_swot_usgs(field_df, ida_df_subset, ida_df, reach_ts_sel, datum_elev=0):
     """ ida_df : matches with reach_ts_sel time closely (1 to 1) """
     fig = make_subplots(rows=1, cols=3, subplot_titles=["SWOT vs USGS Gage WSE", "SWOT and USGS Field Data", "USGS Realtime Discharge"])
     # fig.add_trace(go.Scatter(x=ida_df.stage, y=ida_df.discharge, mode="markers", text=ida_df.index.date), row=1, col=1)
-    fig.add_trace(go.Scatter(x=reach_ts_sel.wse, y=ida_df_subset.stage + datum_elev, mode="markers", name="SWOT vs USGS"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=ida_df_subset.stage + datum_elev, y=reach_ts_sel.wse, mode="markers", name="SWOT vs USGS"), row=1, col=1)
+    # Add OLS fit to the plot
+    mod = sm.OLS(reach_ts_sel.wse.values, sm.add_constant(ida_df_subset.stage.values + datum_elev)).fit()  # , missing="drop"
+    fig.add_trace(go.Scatter(x=ida_df_subset.stage + datum_elev, y=mod.fittedvalues, mode="lines", name=f"OLS trendline. (R-squared={mod.rsquared:.2f})"), row=1, col=1)
+
     fig.add_trace(go.Scatter(x=reach_ts_sel.wse, y=reach_ts_sel.width, mode="markers", name="SWOT"), row=1, col=2)  # SWOT
     fig.add_trace(go.Scatter(x=field_df.gage_height_va + datum_elev, y=field_df.chan_width, mode="markers", name="USGS Field Data"), row=1, col=2)  # USGS Field Measure   
     fig.add_trace(go.Scatter(x=ida_df.index, y=ida_df.discharge, mode="lines", text=ida_df.index, name="hourly (from usgs_IDA)"), row=1, col=3)
@@ -103,7 +108,6 @@ def plot_swot_usgs(field_df, ida_df_subset, ida_df, reach_ts_sel, datum_elev=0):
         title_text="USGS Data (IDA and Field Measurements)",
         title_x=0.5,
         showlegend=True,
-        plot_bgcolor='#dce0e2',  # 'whitesmoke'
-        transition_duration=500  # BNY
-    )
+        plot_bgcolor='#dce0e2',
+        transition_duration=700)
     return fig

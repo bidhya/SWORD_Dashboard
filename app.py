@@ -5,6 +5,7 @@ import os
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
+from bisect import bisect # operate as sorted container
 # from csv import writer, reader
 # import time
 import dash
@@ -872,7 +873,7 @@ def plot_reach(reach_id):
     # del temp, x, idx  # ida_df_subset, 
 
     matching_idx_list = []  # list of indices closest in match to reach datetime index
-    from bisect import bisect #operate as sorted container
+    # from bisect import bisect # operate as sorted container
     timestamps = np.array(ida_df.index)  # get timestamps from ida_df index
     for x in idx:
         upper_index = bisect(timestamps, x, hi=len(timestamps)-1) #find the upper index of the closest time stamp
@@ -885,7 +886,7 @@ def plot_reach(reach_id):
     ## To handle missing values, so use Pandas reindex and interpolate functions
     first_day = ida_df.index[0]     # Timestamp('2010-10-01 05:00:00', tz=None)
     last_day = ida_df.index[-1]     # Timestamp('2011-11-01 04:30:00', tz=None)
-    hourly_index = pd.date_range(first_day, last_day, freq='1H')  # Make a new hourly interval datetime index
+    hourly_index = pd.date_range(first_day, last_day, freq='2H')  # Make a new hourly interval datetime index
     ida_df_hourly = ida_df.reindex(hourly_index)
     # daily_index = pd.date_range(first_day, last_day, freq='d')  # Make a new hourly interval datetime index
     # ida_df_daily = ida_df.reindex(daily_index)
