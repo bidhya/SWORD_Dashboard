@@ -18,9 +18,9 @@ import plotly.graph_objects as go
 import plotly.express as px
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
-load_figure_template("cerulean")
 import logging
 from utils import get_usgs_data, figures
+load_figure_template("cerulean")
 logging.basicConfig(filename="mylogs.log", level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 
 feet2meters = 0.3048
@@ -198,7 +198,12 @@ node_df = get_data("data/")
 node_df_cp = node_df.copy()
 
 # Trigger app.
-app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN],suppress_callback_exceptions=True, title="SWOT Viz")
+app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN],
+                suppress_callback_exceptions=True, 
+                title="SWOT Viz",
+                # meta_tags=[{'name': 'viewport',
+                #             'content': 'width=device-width, initial-scale=1.0, maximum-scale=1.2, minimum-scale=0.5,'}]                            
+                )
 
 #################################################################################################
 # ## Opens 'About SWORD' markdown document used in the modal overlay.
@@ -536,19 +541,16 @@ app.layout = html.Div([
             dcc.Graph(figure=figures.plot_nodes(node_df_cp), id='ReachGraph')
         ]
     ),  # end subdiv3
-    # BNY
     html.Div([
         html.H5("Reach Data"),
         html.Div([
             html.Label('Listing of Reaches'),
             dcc.Dropdown(reach_list, reach_list[0], placeholder="Select a reach to plot", id="reach_list_dropdown", searchable=True, clearable=True, maxHeight=200),
         ], style={"width": "25%", 'align-items': 'left', 'justify-content': 'left'}),
-        html.Div(id="reach_description"),  #, "Reach =   Gage = "
-        
+        html.Div(id="reach_description"),        
         dcc.Graph(id="Reach_TS"),
         # dcc.Graph(id="Node_TS")  # WSE and Width long profile of NODES for each reach
-        dcc.Graph(id="SWOTvsUSGS")  # , figure=plot_scatter(df)        
-
+        dcc.Graph(id="SWOTvsUSGS")  # , figure=plot_scatter(df)
     ]),
 
     # html.Div(
@@ -913,7 +915,7 @@ def plot_reach(reach_id):
     # overall figure properties
     fig.update_xaxes(title_text="Date")
     # fig.update_layout(height=500, title_text=f"Reach: {reach_id}  Gage: {gage}  DatumElev = {datum_elev:.2f} m",title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
-    fig.update_layout(height=500, showlegend=True, plot_bgcolor='#dce0e2', transition_duration=500)  # width=1400,  
+    fig.update_layout(height=400, showlegend=True, plot_bgcolor='#dce0e2', transition_duration=500)  # width=1400,  
 
     # # Plot Node data
     # node_fig = make_subplots(1, 2)

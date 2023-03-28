@@ -104,7 +104,7 @@ def plot_swot_usgs(field_df, ida_df_subset, ida_df, reach_ts_sel, datum_elev=0):
     fig.update_yaxes(title_text="Discharge [cumec]", row=1, col=3)
     # overall figure properties
     fig.update_layout(
-        height=500,  # width=1400,
+        height=400,  # width=1400,
         title_text="USGS Data (IDA and Field Measurements)",
         title_x=0.5,
         showlegend=True,
