@@ -899,13 +899,13 @@ def plot_reach(reach_id):
     # Select one data to make plots
     # Make plot directly here rather than calling another function
     fig = make_subplots(rows=1, cols=3, subplot_titles=["SWOT and Gage WSE", "SWOT Slope", "SWOT Width"])
-    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="markers", name="wse"), row=1, col=1)  # mode="lines+markers"
-    fig.add_trace(go.Scatter(x=ida_df_hourly.index, y=ida_df_hourly.stage + datum_elev, mode="lines", name="hourly (from usgs_IDA)"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="markers", name="SWOT wse"), row=1, col=1)  # mode="lines+markers"
+    fig.add_trace(go.Scatter(x=ida_df_hourly.index, y=ida_df_hourly.stage + datum_elev, mode="lines", name="Gage WSE"), row=1, col=1)
     # fig.add_trace(go.Scatter(x=ida_df_daily.index, y=ida_df_daily.stage + datum_elev, mode="lines+markers", name="usgs_ida_daily"), row=1, col=1)
 
-    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope2"], mode="markers", name="slope2"), row=1, col=2)
-    # fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope"], mode="markers", name="slope"), row=2, col=1)
-    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["width"], mode="markers", name="width"), row=1, col=3)
+    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope"], mode="markers", name="slope", showlegend=False), row=1, col=2)
+    # fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["slope2"], mode="markers", name="slope2", showlegend=False), row=1, col=2)
+    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["width"], mode="markers", name="width", showlegend=False), row=1, col=3)
     # Update xaxis properties
     # fig.update_xaxes(title_text="DateTime (UTC)", row=1, col=1)
     fig.update_yaxes(title_text="WSE [m]", row=1, col=1)
