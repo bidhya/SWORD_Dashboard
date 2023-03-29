@@ -1,10 +1,13 @@
 # Running notes on changes made after forking 
 Reverse Chronological Order  
 
-## Mar 22, 2024  --> 
+## Mar 25, 2024  --> merged to main multiple times
 - modified sword_maps.py to match my python environment, path, and updates  
 - mapping and symbology still not working on my machine  
 - added gages on basin74 (by E. Altaneu)
+- updated figures and legend  
+- updated python packages on server
+- addes statsmodels for fitting line  
 
 ## Mar 17, 2024  --> merged to Main round1 and 2
 - code cleanup

@@ -899,7 +899,7 @@ def plot_reach(reach_id):
     # Select one data to make plots
     # Make plot directly here rather than calling another function
     fig = make_subplots(rows=1, cols=3, subplot_titles=["SWOT and Gage WSE", "SWOT Slope", "SWOT Width"])
-    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="markers", name="SWOT wse"), row=1, col=1)  # mode="lines+markers"
+    fig.add_trace(go.Scatter(x=reach_ts_sel.index, y=reach_ts_sel["wse"], mode="markers", name="SWOT WSE"), row=1, col=1)  # mode="lines+markers"
     fig.add_trace(go.Scatter(x=ida_df_hourly.index, y=ida_df_hourly.stage + datum_elev, mode="lines", name="Gage WSE"), row=1, col=1)
     # fig.add_trace(go.Scatter(x=ida_df_daily.index, y=ida_df_daily.stage + datum_elev, mode="lines+markers", name="usgs_ida_daily"), row=1, col=1)
 
@@ -915,7 +915,7 @@ def plot_reach(reach_id):
     # overall figure properties
     fig.update_xaxes(title_text="Date")
     # fig.update_layout(height=500, title_text=f"Reach: {reach_id}  Gage: {gage}  DatumElev = {datum_elev:.2f} m",title_x=0.5, showlegend=True, plot_bgcolor='#dce0e2')  # width=1400,  
-    fig.update_layout(height=400, showlegend=True, plot_bgcolor='#dce0e2', transition_duration=500)  # width=1400,  
+    fig.update_layout(height=450, showlegend=True, plot_bgcolor='#dce0e2', transition_duration=500)  # width=1400,  
 
     # # Plot Node data
     # node_fig = make_subplots(1, 2)
