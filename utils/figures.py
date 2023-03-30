@@ -44,7 +44,9 @@ def plot_swot_usgs(field_df, ida_df_subset, ida_df, reach_ts_sel, datum_elev=0):
     fig.add_trace(go.Scatter(x=ida_df_subset.stage + datum_elev, y=reach_ts_sel.wse, mode="markers", name="SWOT vs USGS", showlegend=False), row=1, col=1)
     # Add OLS fit to the plot
     mod = sm.OLS(reach_ts_sel.wse.values, sm.add_constant(ida_df_subset.stage.values + datum_elev)).fit()  # , missing="drop"
-    fig.add_trace(go.Scatter(x=ida_df_subset.stage + datum_elev, y=mod.fittedvalues, mode="lines", name=f"OLS fit (R-squared={mod.rsquared:.2f})"), row=1, col=1)
+    bias = (reach_ts_sel.wse.values - (ida_df_subset.stage.values + datum_elev)).mean()
+    fig.add_trace(go.Scatter(x=ida_df_subset.stage + datum_elev, y=mod.fittedvalues, mode="lines", 
+                             name=f"OLS fit (R-squared={mod.rsquared:.2f}), \nbias = {bias:.2f} m"), row=1, col=1)
 
     fig.add_trace(go.Scatter(x=reach_ts_sel.wse, y=reach_ts_sel.width, mode="markers", name="SWOT"), row=1, col=2)  # SWOT
     fig.add_trace(go.Scatter(x=field_df.gage_height_va + datum_elev, y=field_df.chan_width, mode="markers", name="USGS Field Data"), row=1, col=2)  # USGS Field Measure   
