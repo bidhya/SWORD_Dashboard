@@ -10,7 +10,7 @@ import statsmodels.api as sm
 def plot_nodes(df, reach=None):
     # Function for plotting node level data.
     if reach is None:
-        rch = 81247100041  # default reach
+        rch = 74265000121  # 81247100041  # default reach
     else:
         rch = reach
     node_reaches = df.loc[df['reach_id'] == rch]
@@ -27,11 +27,11 @@ def plot_nodes(df, reach=None):
     fig.update_yaxes(title_text="Width (m)", row=1, col=2)
     # overall figure properties
     fig.update_layout(
-        height=400, #width=1400,
-        title_text="Reach "+str(rch)+": Node Level Attributes",
+        height=400,  # width=1400,
+        title_text="Reach " + str(rch) + ": Node Level Attributes",
         title_x=0.5,
         showlegend=False,
-        plot_bgcolor='#dce0e2', # 'whitesmoke'
+        plot_bgcolor='#dce0e2',  # 'whitesmoke'
         transition_duration=500
     )
     return fig

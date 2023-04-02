@@ -527,7 +527,7 @@ app.layout = html.Div([
             dcc.Input(
                 id='ReachID',
                 type='number',
-                value=81247100041,
+                value=74265000121,  # 81247100041,
                 placeholder="Reach ID",
                 debounce=True,
                 min=int(np.min(node_df['reach_id'])),
@@ -1003,4 +1003,4 @@ def toggle_modal(n5, n6, is_open):
 
 if __name__ == '__main__':
     # app.run_server()
-    app.run_server(debug=False)  # use this line instead of the line before to run the app in debug mode.
+    app.run_server(debug=True)  # use this line instead of the line before to run the app in debug mode.

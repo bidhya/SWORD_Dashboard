@@ -1,7 +1,9 @@
 # Running notes on changes made after forking 
 Reverse Chronological Order  
+## Apr 02, 2023  --> 
+- plot the reach matching gages for SWORD part on initial loda  
 
-## Mar 25, 2024  --> merged to main multiple times
+## Mar 25, 2023  --> merged to main multiple times
 - modified sword_maps.py to match my python environment, path, and updates  
 - mapping and symbology still not working on my machine  
 - added gages on basin74 (by E. Altaneu)
@@ -9,7 +11,7 @@ Reverse Chronological Order
 - updated python packages on server
 - addes statsmodels for fitting line  
 
-## Mar 17, 2024  --> merged to Main round1 and 2
+## Mar 17, 2023  --> merged to Main round1 and 2
 - code cleanup
 - start redesign of interface overlaying USGS stage over SWOT WSE
 - overlay USGS stage over SWOT WSE. 
@@ -17,14 +19,14 @@ Reverse Chronological Order
 - Pulling datums from USGS using pandas and converted to meters  
 - Display reachid and gage in a html div so it is selectable 
 
-## Mar 15, 2024
+## Mar 15, 2023
 - Display the gage Id correspondig to Reach.  
 - convert all units to meters [as part of data download and processing]  
 
-## Mar 14, 2024
+## Mar 14, 2023
 Cloning only main on new replacement laptop
 
-## Mar 11, 2024
+## Mar 11, 2023
 ohio2 branch --> merged to main
 - Selecting subset of gages with both stage and discharge IDA data  
     - some gages has only stage other had two stages with backwater. These gages are currently removed   
@@ -34,7 +36,7 @@ ohio2 branch --> merged to main
 - App is very slow because scatter >15k points is known to slow down  
 - Subset based on dates for reach to reduce data volume  
 
-## Mar 03, 2024
+## Mar 03, 2023
 ohio1 branch --> merged to main
 - replace "time_str" field with "time" because Merrit used this field  
 - Load, parse and plot Ohio River data  
