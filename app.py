@@ -542,7 +542,7 @@ app.layout = html.Div([
         ]
     ),  # end subdiv3
     html.Div([
-        html.H5("Reach Data"),
+        html.H5("TimeSeries Data"),
         html.Div([
             html.Label('Listing of Reaches'),
             dcc.Dropdown(reach_list, reach_list[0], placeholder="Select a reach to plot", id="reach_list_dropdown", searchable=True, clearable=True, maxHeight=200),
@@ -1003,4 +1003,4 @@ def toggle_modal(n5, n6, is_open):
 
 if __name__ == '__main__':
     # app.run_server()
-    app.run_server(debug=True)  # use this line instead of the line before to run the app in debug mode.
+    app.run_server(debug=False)  # use this line instead of the line before to run the app in debug mode.
