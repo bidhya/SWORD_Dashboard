@@ -4,6 +4,9 @@ import numpy as np
 import pytz
 import pandas as pd
 import logging
+# import warnings
+# warnings.filterwarnings(action="ignore", category=FutureWarning, message="infer_datetime_format")
+
 feet2meters = 0.3048
 cfs2cms = 0.02832  # TODO this is approximate
 
@@ -63,7 +66,7 @@ def read_usgs_ida(gage):
                 USGS 03399800 OHIO RIVER AT SMITHLAND DAM, SMITHLAND, KY
     """
     if os.path.exists(os.path.join(ida_folder, f'{gage}_ida.csv')):
-        df = pd.read_csv(os.path.join(ida_folder, f'{gage}_ida.csv'), index_col='datetime', parse_dates=True, infer_datetime_format=True)
+        df = pd.read_csv(os.path.join(ida_folder, f'{gage}_ida.csv'), index_col='datetime', parse_dates=True)  # , infer_datetime_format=True
         return df
     download_folder = f"{ida_folder}/downloads"
     os.makedirs(download_folder, exist_ok=True)
@@ -111,6 +114,7 @@ def read_usgs_ida(gage):
             df = df[["discharge", "stage"]]
             df["discharge"] = df.discharge.astype("float") * cfs2cms
             df["stage"] = df.stage.astype("float") * feet2meters
+            df = df.sort_index()  # Apr 20, 2023. due to error for warning below
             df = df.loc["2010":"2011"]  # FutureWarning: Value based partial slicing on non-monotonic DatetimeIndexes with non-existing keys is deprecated and will raise a KeyError in a future Version.
 
             # df = df.dropna()  # This may be required
@@ -127,7 +131,7 @@ def read_usgs_field_data(gage):
     """ gage: stationID of USGS gage
     """
     if os.path.exists(os.path.join(field_measure_folder, f"{gage}.csv")):
-        df = pd.read_csv(os.path.join(field_measure_folder, f"{gage}.csv"), index_col='measurement_dt', parse_dates=True, infer_datetime_format=True)
+        df = pd.read_csv(os.path.join(field_measure_folder, f"{gage}.csv"), index_col='measurement_dt', parse_dates=True)  # , infer_datetime_format=True
         return df
     download_folder = f"{field_measure_folder}/downloads"
     os.makedirs(download_folder, exist_ok=True)
@@ -155,7 +159,7 @@ def read_usgs_field_data(gage):
         # print(df.head())
 
         df = df.drop(0)  # first row after headers is fieldsize specification such as 5s	15s	6s..
-        df.index = pd.to_datetime(df.measurement_dt)
+        df.index = pd.to_datetime(df.measurement_dt, format="mixed")  # new for pandas 2.0
         df = df[df.discharge_va == df.chan_discharge]  # only take discharge measurements done at the one channel (not different): when only one channel, total discharge is same in channel_discharge
 
         flag1 = (df.measured_rating_diff == 'EXCL') | (df.measured_rating_diff == 'Excellent') | (df.measured_rating_diff == 'GOOD') | (df.measured_rating_diff == 'Good')
@@ -191,6 +195,7 @@ def read_usgs_field_data(gage):
         df["chan_velocity"] = df.chan_velocity * feet2meters
 
         # df = df['2001':]
+        df = df.sort_index()  # Apr 20, 2023. due to error for warning below
         df = df.loc["2010":"2011"]
         # Drop the duplicates (ie, the ones measured the same time)
         # Seems like these measurements are taken on different branches of streams
