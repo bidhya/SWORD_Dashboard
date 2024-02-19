@@ -888,7 +888,7 @@ def plot_reach(reach_id):
     ## To handle missing values, so use Pandas reindex and interpolate functions
     first_day = ida_df.index[0]     # Timestamp('2010-10-01 05:00:00', tz=None)
     last_day = ida_df.index[-1]     # Timestamp('2011-11-01 04:30:00', tz=None)
-    hourly_index = pd.date_range(first_day, last_day, freq='2H')  # Make a new hourly interval datetime index
+    hourly_index = pd.date_range(first_day, last_day, freq='2h')  # OLD = 2H Make a new hourly interval datetime index
     ida_df_hourly = ida_df.reindex(hourly_index)
     # daily_index = pd.date_range(first_day, last_day, freq='d')  # Make a new hourly interval datetime index
     # ida_df_daily = ida_df.reindex(daily_index)
